@@ -105,7 +105,7 @@ function fmtDur(min){ if(min<1) return 'agora'; if(min<60) return min+' min'; co
 /* ===== mapa + marcadores ===== */
 let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null;
 const _homeIcon = ()=>L.divIcon({html:'<div class="track-home-badge"><span>🏠</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
-const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🛵</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
+const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🏍️</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 function trackEnsureMap(){
   if(typeof L==='undefined' || _trackMap) return;
   _trackMap=L.map('track-map',{zoomControl:true,attributionControl:false}).setView([-16.6869,-49.2648],13);
@@ -147,14 +147,16 @@ function atualizarRastreioCliente(){
     desenharTrack(dest,null); return;
   }
   // em rota
+  const _nome = (_trackEntDoc && _trackEntDoc.nome) ? String(_trackEntDoc.nome).trim().split(' ')[0] : '';
+  const _aCaminho = _nome ? `${_nome} está a caminho com o seu pedido! 🏍️` : 'Seu pedido está a caminho 🏍️';
   if(viva && dest){
     const min=Math.max(1,Math.round(legMin(viva,dest)));
-    st.textContent='Seu pedido está a caminho 🛵';
+    st.textContent=_aCaminho;
     eta.textContent = min<=2 ? 'Chegando!' : `~${fmtDur(min)}`;
-    sub.textContent = min<=2 ? 'O entregador está pertinho de você.' : 'Tempo estimado até você.';
+    sub.textContent = min<=2 ? `${_nome||'O entregador'} está pertinho de você.` : 'Tempo estimado até você.';
     pulse.className='track-pulse'; desenharTrack(dest,viva);
   } else {
-    st.textContent='Seu pedido está a caminho 🛵'; eta.textContent='';
+    st.textContent=_aCaminho; eta.textContent='';
     sub.textContent='Aguardando o sinal de GPS do entregador…'; pulse.className='track-pulse';
     desenharTrack(dest,null);
   }
@@ -184,7 +186,7 @@ function iniciarDemoRastreio(){
   const passo=()=>{
     if(step>total){ _ultEntrega.status='entregue'; _trackEntDoc=null; atualizarRastreioCliente(); return; }
     const t=step/total;
-    _trackEntDoc={ativo:true, lat:start.lat+(dest.lat-start.lat)*t, lng:start.lng+(dest.lng-start.lng)*t, atualizadoEm:Date.now()};
+    _trackEntDoc={ativo:true, nome:'Gustavo', lat:start.lat+(dest.lat-start.lat)*t, lng:start.lng+(dest.lng-start.lng)*t, atualizadoEm:Date.now()};
     atualizarRastreioCliente();
     step++; setTimeout(passo, 1500);
   };
