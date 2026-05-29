@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#283d1a">
+<title>Loretto Scarpa · Acompanhe sua entrega</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Playfair+Display:wght@600;700&family=Barlow:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root{
+    --bg:#283d1a; --bg2:#1f3013;
+    --surface:#374f24; --surface-2:#46672f; --surface-3:#60813e;
+    --line:rgba(212,180,90,.18); --line-strong:rgba(212,180,90,.34);
+    --text:#f8f3e6; --text-soft:rgba(248,243,230,.78); --text-mute:rgba(248,243,230,.5);
+    --gold:#d4b45a; --gold-lt:#ebd48a;
+    --calm:#7fae6b;
+    --ff-display:'Cormorant Garamond',serif;
+    --ff-grand:'Playfair Display',serif;
+    --ff-eyebrow:'Barlow',sans-serif;
+    --ff-body:'Jost',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--ff-body);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  #track-view{display:flex;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
+  .track-top{position:relative;z-index:3;padding:20px 20px 16px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg));box-shadow:0 16px 24px -12px rgba(0,0,0,.55)}
+  .track-logo{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold);font-family:var(--ff-grand);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 0 4px rgba(212,180,90,.08)}
+  .track-brand-txt{font-family:var(--ff-eyebrow);letter-spacing:.34em;font-size:11px;color:var(--gold);margin-top:9px}
+  .track-h{font-family:var(--ff-display);font-size:23px;font-weight:600;margin-top:3px}
+  .track-h::after{content:'';display:block;width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:10px auto 0}
+  #track-map{flex:1;min-height:0;width:100%;background:var(--bg2)}
+  #track-map .leaflet-tile-pane{filter:saturate(.6) sepia(.22) brightness(.97) contrast(.92)}
+  .track-divicon{background:transparent!important;border:0!important;box-shadow:none!important}
+  .track-route{stroke-linecap:round;stroke-dasharray:1 11;animation:trackdash 1.1s linear infinite}
+  @keyframes trackdash{to{stroke-dashoffset:-12}}
+  .track-moto-halo{position:absolute;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:rgba(212,180,90,.30);animation:motoping 1.9s ease-out infinite}
+  @keyframes motoping{0%{transform:scale(.45);opacity:.85}100%{transform:scale(1.7);opacity:0}}
+  .track-moto-dot{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e7cd84,var(--gold));border:2px solid #fffdf6;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 9px rgba(0,0,0,.55)}
+  .track-home-badge{position:absolute;left:-16px;top:-32px;width:32px;height:32px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);background:var(--surface-2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
+  .track-home-badge>span{transform:rotate(45deg);font-size:15px}
+  .track-card{position:relative;z-index:3;background:linear-gradient(180deg,var(--surface),var(--surface-2));border-top:1px solid rgba(212,180,90,.25);padding:22px 20px 26px;text-align:center;box-shadow:0 -16px 34px -8px rgba(0,0,0,.5)}
+  .track-pulse{width:11px;height:11px;border-radius:50%;background:var(--calm);margin:0 auto 12px;animation:trackpulse 1.6s ease-out infinite}
+  @keyframes trackpulse{0%{box-shadow:0 0 0 0 rgba(127,174,107,.55)}70%{box-shadow:0 0 0 13px rgba(127,174,107,0)}100%{box-shadow:0 0 0 0 rgba(127,174,107,0)}}
+  .track-pulse.done{background:var(--calm);animation:none;box-shadow:0 0 0 4px rgba(127,174,107,.18)}
+  .track-pulse.off{background:var(--text-mute);animation:none}
+  .track-st{font-family:var(--ff-display);font-size:22px;font-weight:600;color:var(--text)}
+  .track-eta{font-family:var(--ff-grand);font-size:40px;font-weight:700;color:var(--gold);margin-top:6px;line-height:1.05}
+  .track-eta:empty{display:none}
+  .track-sub{font-size:14px;color:var(--text-soft);margin-top:7px}
+</style>
+</head>
+<body>
+<div id="track-view">
+  <div class="track-top">
+    <div class="track-logo">LS</div>
+    <div class="track-brand-txt">LORETTO SCARPA</div>
+    <div class="track-h" id="track-title">Acompanhe sua entrega</div>
+  </div>
+  <div id="track-map"></div>
+  <div class="track-card">
+    <div class="track-pulse" id="track-pulse"></div>
+    <div class="track-st" id="track-st">Carregando…</div>
+    <div class="track-eta" id="track-eta"></div>
+    <div class="track-sub" id="track-sub"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCogQoTSULCdC1JhTb0IUilWAIA1itBJ8U",
+  authDomain: "loretto-scarpa-l-icr.firebaseapp.com",
+  projectId: "loretto-scarpa-l-icr",
+  storageBucket: "loretto-scarpa-l-icr.firebasestorage.app",
+  messagingSenderId: "428188657366",
+  appId: "1:428188657366:web:091e9d32ddfd712c83cb77"
+};
+const $ = id => document.getElementById(id);
+let fdb=null, FIREBASE_ON=false;
+try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initializeApp(FIREBASE_CONFIG); fdb=firebase.firestore(); FIREBASE_ON=true; } }catch(e){ console.warn('firebase', e); }
+
+/* ===== token opaco (mesmo do app) ===== */
+function _ub64u(s){ s=String(s||'').replace(/-/g,'+').replace(/_/g,'/'); try{ return decodeURIComponent(escape(atob(s))); }catch(_){ return ''; } }
+function _chk(id){ let n=0; const s='LSx'+id; for(let i=0;i<s.length;i++) n=(n*31+s.charCodeAt(i))%100000; return n; }
+function idDeToken(tok){ const m=/^LSR1\|(.+)\|(\d+)$/.exec(_ub64u(tok)); if(!m) return null; return _chk(m[1])===Number(m[2]) ? m[1] : null; }
+
+/* ===== helpers de mapa/tempo ===== */
+function coordFrom(url){
+  if(!url) return null;
+  let s; try{ s=decodeURIComponent(url); }catch(e){ s=url; }
+  const pats=[/[?&]q=(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/,/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]ll=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]destination=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/,/(-?\d{1,2}\.\d{4,}),\s*(-?\d{1,3}\.\d{4,})/];
+  for(const p of pats){ const m=s.match(p); if(m) return {lat:parseFloat(m[1]), lng:parseFloat(m[2])}; }
+  return null;
+}
+function coordOf(e){ return e.coord||coordFrom(e.link); }
+function haversine(a,b){ const R=6371, tr=x=>x*Math.PI/180; const dLat=tr(b.lat-a.lat), dLng=tr(b.lng-a.lng); const s=Math.sin(dLat/2)**2 + Math.cos(tr(a.lat))*Math.cos(tr(b.lat))*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(s)); }
+function legMin(a,b){ return (haversine(a,b)*1.4)/22*60; }  /* mesma estimativa do painel */
+function fmtDur(min){ if(min<1) return 'agora'; if(min<60) return min+' min'; const h=Math.floor(min/60), m=min%60; return h+'h'+(m?String(m).padStart(2,'0'):'00'); }
+
+/* ===== mapa + marcadores ===== */
+let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null;
+const _homeIcon = ()=>L.divIcon({html:'<div class="track-home-badge"><span>🏠</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
+const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🛵</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
+function trackEnsureMap(){
+  if(typeof L==='undefined' || _trackMap) return;
+  _trackMap=L.map('track-map',{zoomControl:true,attributionControl:false}).setView([-16.6869,-49.2648],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_trackMap);
+  _trackLayer=L.layerGroup().addTo(_trackMap);
+  setTimeout(()=>_trackMap.invalidateSize(),120);
+}
+function desenharTrack(dest, ent){
+  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
+  _trackLayer.clearLayers();
+  const pts=[];
+  if(dest){ L.marker([dest.lat,dest.lng],{icon:_homeIcon()}).addTo(_trackLayer); pts.push([dest.lat,dest.lng]); }
+  if(ent){ L.marker([ent.lat,ent.lng],{icon:_motoIcon()}).addTo(_trackLayer); pts.push([ent.lat,ent.lng]); }
+  if(dest&&ent) L.polyline([[ent.lat,ent.lng],[dest.lat,dest.lng]],{color:'#d4b45a',weight:3,opacity:.8,className:'track-route'}).addTo(_trackLayer);
+  if(pts.length===1) _trackMap.setView(pts[0],15);
+  else if(pts.length>1) _trackMap.fitBounds(pts,{padding:[60,60],maxZoom:16});
+}
+function pararTrackEnt(){ if(_trackUnsubEnt){ _trackUnsubEnt(); _trackUnsubEnt=null; } }
+
+function atualizarRastreioCliente(){
+  const e=_ultEntrega; if(!e) return;
+  const dest=coordOf(e);
+  const st=$('track-st'), eta=$('track-eta'), sub=$('track-sub'), pulse=$('track-pulse'), title=$('track-title');
+  if(e.status==='entregue'){
+    title.textContent='Entrega finalizada'; st.textContent='✓ Pedido entregue'; eta.textContent='';
+    sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛'; pulse.className='track-pulse done';
+    desenharTrack(dest,null); pararTrackEnt(); return;
+  }
+  if(e.status==='nao_entregue' || e.status==='cancelado'){
+    title.textContent='Entrega encerrada'; st.textContent='Entrega encerrada'; eta.textContent='';
+    sub.textContent='Fale com a loja para mais informações.'; pulse.className='track-pulse off';
+    desenharTrack(dest,null); pararTrackEnt(); return;
+  }
+  const r=_trackEntDoc;
+  const viva=(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0)<150000)) ? {lat:r.lat,lng:r.lng} : null;
+  if(e.status==='aguardando'){
+    st.textContent='Preparando seu pedido'; eta.textContent='';
+    sub.textContent='Assim que sair para entrega, você vê o trajeto aqui.'; pulse.className='track-pulse off';
+    desenharTrack(dest,null); return;
+  }
+  // em rota
+  if(viva && dest){
+    const min=Math.max(1,Math.round(legMin(viva,dest)));
+    st.textContent='Seu pedido está a caminho 🛵';
+    eta.textContent = min<=2 ? 'Chegando!' : `~${fmtDur(min)}`;
+    sub.textContent = min<=2 ? 'O entregador está pertinho de você.' : 'Tempo estimado até você.';
+    pulse.className='track-pulse'; desenharTrack(dest,viva);
+  } else {
+    st.textContent='Seu pedido está a caminho 🛵'; eta.textContent='';
+    sub.textContent='Aguardando o sinal de GPS do entregador…'; pulse.className='track-pulse';
+    desenharTrack(dest,null);
+  }
+}
+
+function iniciarRastreioCliente(id){
+  if(id==='demo'){ iniciarDemoRastreio(); return; }
+  const sub=()=>{
+    fdb.collection('entregas').doc(String(id)).onSnapshot(d=>{
+      if(!d.exists){ $('track-st').textContent='Entrega não encontrada'; $('track-pulse').className='track-pulse off'; return; }
+      _ultEntrega=d.data();
+      if(_ultEntrega.entregador && !_trackUnsubEnt){
+        _trackUnsubEnt=fdb.collection('rastreio').doc(_ultEntrega.entregador).onSnapshot(rd=>{ _trackEntDoc=rd.exists?rd.data():null; atualizarRastreioCliente(); },()=>{});
+      }
+      atualizarRastreioCliente();
+    }, ()=>{ $('track-st').textContent='Não consegui carregar agora'; });
+  };
+  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(sub).catch(sub); }
+  else { $('track-st').textContent='Sem conexão com o servidor'; $('track-pulse').className='track-pulse off'; }
+  setInterval(atualizarRastreioCliente, 30000);
+}
+function iniciarDemoRastreio(){
+  $('track-title').textContent='Acompanhe sua entrega';
+  const dest={lat:-16.7055,lng:-49.2650}, start={lat:-16.6800,lng:-49.2920};
+  _ultEntrega={id:'demo',cliente:'Cliente Teste',status:'em_rota',entregador:'gustavo',coord:dest};
+  let step=0; const total=30;
+  const passo=()=>{
+    if(step>total){ _ultEntrega.status='entregue'; _trackEntDoc=null; atualizarRastreioCliente(); return; }
+    const t=step/total;
+    _trackEntDoc={ativo:true, lat:start.lat+(dest.lat-start.lat)*t, lng:start.lng+(dest.lng-start.lng)*t, atualizadoEm:Date.now()};
+    atualizarRastreioCliente();
+    step++; setTimeout(passo, 1500);
+  };
+  passo();
+}
+
+/* ===== bootstrap: lê o token do link ===== */
+(function(){
+  const hashTok=(/^#acompanhar\/(.+)$/.exec(location.hash||'')||[])[1];
+  const qTrack=new URLSearchParams(location.search).get('track');
+  const id = hashTok ? (hashTok==='demo'?'demo':idDeToken(hashTok)) : qTrack;
+  if(id){ iniciarRastreioCliente(id); }
+  else {
+    $('track-title').textContent='Rastreio'; $('track-st').textContent='Link de rastreio inválido';
+    $('track-sub').textContent='Confira o link enviado pela loja.'; $('track-pulse').className='track-pulse off';
+    trackEnsureMap();
+  }
+})();
+</script>
+</body>
+</html>
