@@ -67,6 +67,7 @@
     <div class="track-sub" id="track-sub"></div>
   </div>
 </div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v2</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -101,6 +102,7 @@ function coordOf(e){ return e.coord||coordFrom(e.link); }
 function haversine(a,b){ const R=6371, tr=x=>x*Math.PI/180; const dLat=tr(b.lat-a.lat), dLng=tr(b.lng-a.lng); const s=Math.sin(dLat/2)**2 + Math.cos(tr(a.lat))*Math.cos(tr(b.lat))*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(s)); }
 function legMin(a,b){ return (haversine(a,b)*1.4)/22*60; }  /* mesma estimativa do painel */
 function fmtDur(min){ if(min<1) return 'agora'; if(min<60) return min+' min'; const h=Math.floor(min/60), m=min%60; return h+'h'+(m?String(m).padStart(2,'0'):'00'); }
+function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
 
 /* ===== mapa + marcadores ===== */
 let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null;
@@ -152,9 +154,25 @@ function atualizarRastreioCliente(){
   if(viva && dest){
     const min=Math.max(1,Math.round(legMin(viva,dest)));
     st.textContent=_aCaminho;
-    eta.textContent = min<=2 ? 'Chegando!' : `~${fmtDur(min)}`;
-    sub.textContent = min<=2 ? `${_nome||'O entregador'} está pertinho de você.` : 'Tempo estimado até você.';
+    if(min<=2){ eta.textContent='Chegando!'; sub.textContent=`${_nome||'O entregador'} está pertinho de você.`; }
+    else { eta.textContent=`~${fmtDur(min)}`; sub.innerHTML=`Chegada prevista por volta de <b>${fmtClock(Date.now()+min*60000)}</b>`; }
     pulse.className='track-pulse'; desenharTrack(dest,viva);
+  } else if(r && r.lat!=null && dest){
+    // GPS parado: usa a ÚLTIMA posição enviada — há quanto tempo + previsão (min + horário)
+    const ageMin=Math.max(1,Math.round((Date.now()-(r.atualizadoEm||Date.now()))/60000));
+    const travel=Math.max(1,Math.round(legMin({lat:r.lat,lng:r.lng},dest)));
+    const arrTs=(r.atualizadoEm||Date.now())+travel*60000;
+    const restante=Math.round((arrTs-Date.now())/60000);
+    const rodape='<br><span style="opacity:.7;font-size:.88em">A localização atualiza assim que o entregador reabrir o app.</span>';
+    st.textContent=_aCaminho;
+    if(restante>2){
+      eta.textContent=`~${fmtDur(restante)}`;
+      sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · chegada prevista por volta de <b>${fmtClock(arrTs)}</b>${rodape}`;
+    } else {
+      eta.textContent='Chegando!';
+      sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · deve chegar a qualquer momento${rodape}`;
+    }
+    pulse.className='track-pulse off'; desenharTrack(dest,{lat:r.lat,lng:r.lng});
   } else {
     st.textContent=_aCaminho; eta.textContent='';
     sub.textContent='Aguardando o sinal de GPS do entregador…'; pulse.className='track-pulse';
