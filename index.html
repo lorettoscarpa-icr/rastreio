@@ -67,7 +67,7 @@
     <div class="track-sub" id="track-sub"></div>
   </div>
 </div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v2</div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v3</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -89,6 +89,14 @@ try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initi
 function _ub64u(s){ s=String(s||'').replace(/-/g,'+').replace(/_/g,'/'); try{ return decodeURIComponent(escape(atob(s))); }catch(_){ return ''; } }
 function _chk(id){ let n=0; const s='LSx'+id; for(let i=0;i<s.length;i++) n=(n*31+s.charCodeAt(i))%100000; return n; }
 function idDeToken(tok){ const m=/^LSR1\|(.+)\|(\d+)$/.exec(_ub64u(tok)); if(!m) return null; return _chk(m[1])===Number(m[2]) ? m[1] : null; }
+// token do ENTREGADOR (transmite): LSE1|id|nome|cor|chk
+function _chkPayload(s){ let n=0; const x='LSx'+s; for(let i=0;i<x.length;i++) n=(n*31+x.charCodeAt(i))%100000; return n; }
+function dadosDeTokenEnt(tok){
+  const raw=_ub64u(tok); const m=/^(LSE1\|.+)\|(\d+)$/.exec(raw);
+  if(!m || _chkPayload(m[1])!==Number(m[2])) return null;
+  const p=m[1].split('|');               // [LSE1, id, nome, cor]
+  return p[1] ? { id:p[1], nome:p[2]||'', cor:p[3]||'#d4b45a' } : null;
+}
 
 /* ===== helpers de mapa/tempo ===== */
 function coordFrom(url){
@@ -211,8 +219,56 @@ function iniciarDemoRastreio(){
   passo();
 }
 
+/* ===== modo ENTREGADOR: transmite o GPS pra coleção rastreio/{id} (igual ao painel) ===== */
+let _entWatch=null, _entLast=0, _entWake=null;
+async function pedirWakeEnt(){ try{ if('wakeLock' in navigator && !_entWake){ _entWake=await navigator.wakeLock.request('screen'); _entWake.addEventListener('release',()=>{_entWake=null;}); } }catch(_){ } }
+function transmitirEnt(d,c){
+  if(!FIREBASE_ON||!fdb) return;
+  fdb.collection('rastreio').doc(d.id).set({
+    entregador:d.id, nome:d.nome||'', cor:d.cor||'#d4b45a',
+    lat:c.latitude, lng:c.longitude, precisao:c.accuracy||null,
+    ativo:true, atualizadoEm:Date.now()
+  }).catch(e=>console.warn('tx', e));
+}
+function iniciarModoEntregador(d){
+  $('track-title').textContent='Transmitindo localização';
+  $('track-st').textContent='📍 Iniciando GPS…'; $('track-eta').textContent=''; $('track-pulse').className='track-pulse';
+  $('track-sub').textContent='Mantenha esta tela aberta enquanto faz as entregas.';
+  if(!navigator.geolocation){ $('track-st').textContent='Este aparelho não permite localização'; $('track-pulse').className='track-pulse off'; return; }
+  pedirWakeEnt();
+  _entWatch = navigator.geolocation.watchPosition(
+    pos=>{
+      const now=Date.now();
+      desenharTrack(null,{lat:pos.coords.latitude,lng:pos.coords.longitude});
+      if(now-_entLast>=60000){     // transmite a cada ~1 min (leve)
+        _entLast=now; transmitirEnt(d,pos.coords);
+        $('track-st').textContent='📍 '+(d.nome?d.nome+', sua':'Sua')+' localização está sendo compartilhada';
+        $('track-sub').innerHTML='Última atualização: <b>'+fmtClock(now)+'</b><br>Mantenha esta tela aberta enquanto entrega.';
+      }
+    },
+    err=>{ $('track-st').textContent='Não consegui pegar o GPS'; $('track-sub').textContent='Permita a localização no navegador e abra o link de novo.'; $('track-pulse').className='track-pulse off'; },
+    {enableHighAccuracy:true, maximumAge:30000, timeout:20000}
+  );
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') pedirWakeEnt(); });
+  window.addEventListener('pagehide', ()=>{ if(FIREBASE_ON&&fdb) fdb.collection('rastreio').doc(d.id).set({ativo:false,atualizadoEm:Date.now()},{merge:true}).catch(()=>{}); });
+}
+
 /* ===== bootstrap: lê o token do link ===== */
 (function(){
+  // modo ENTREGADOR (transmite): #transmitir/<token>
+  const hashTx=(/^#transmitir\/(.+)$/.exec(location.hash||'')||[])[1];
+  if(hashTx){
+    const d=dadosDeTokenEnt(hashTx);
+    if(d){
+      trackEnsureMap();
+      if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(()=>iniciarModoEntregador(d)).catch(()=>iniciarModoEntregador(d)); }
+      else iniciarModoEntregador(d);
+      return;
+    }
+    $('track-title').textContent='Link inválido'; $('track-st').textContent='Link de transmissão inválido';
+    $('track-sub').textContent='Peça um novo link para a loja.'; $('track-pulse').className='track-pulse off'; trackEnsureMap(); return;
+  }
+  // modo CLIENTE (só vê): #acompanhar/<token> ou ?track=
   const hashTok=(/^#acompanhar\/(.+)$/.exec(location.hash||'')||[])[1];
   const qTrack=new URLSearchParams(location.search).get('track');
   const id = hashTok ? (hashTok==='demo'?'demo':idDeToken(hashTok)) : qTrack;
