@@ -107,7 +107,7 @@
     <div id="frota-list" style="display:none"></div>
   </div>
 </div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v16</div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v20</div>
 <div id="ent-ov"><div class="ent-ov-card">
   <div class="lg">LS</div>
   <div class="ent-ov-h" id="ent-ov-h">Compartilhar localização</div>
@@ -174,9 +174,34 @@ function fmtDur(min){ if(min<1) return 'agora'; if(min<60) return min+' min'; co
 function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
 
 /* ===== mapa + marcadores ===== */
-let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null;
+let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null, _trackUnsubDoc=null, _trackInt=null;
 const _homeIcon = ()=>L.divIcon({html:'<div class="track-home-badge"><span>🏠</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🏍️</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
+/* ===== marcadores que DESLIZAM (em vez de redesenhar tudo a cada posição) ===== */
+let _motos={}, _cena=null, _staticSig=null, _fitPend=false;
+function _slideTo(M,to){
+  const from=M.marker.getLatLng();
+  if(Math.abs(from.lat-to[0])<1e-7 && Math.abs(from.lng-to[1])<1e-7) return;
+  if(M.anim) cancelAnimationFrame(M.anim);
+  const t0=performance.now(), dur=1400, fl=from.lat, fg=from.lng;
+  (function step(now){
+    let k=Math.min(1,(now-t0)/dur); k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;   // ease in-out
+    M.marker.setLatLng([fl+(to[0]-fl)*k, fg+(to[1]-fg)*k]);
+    if(k<1) M.anim=requestAnimationFrame(step);
+  })(performance.now());
+}
+function motoSet(chave,lat,lng,icon,sig){              // cria a moto ou desliza pra nova posição
+  let M=_motos[chave];
+  if(!M){ _motos[chave]={marker:L.marker([lat,lng],{icon:icon,zIndexOffset:1000}).addTo(_trackMap),anim:null,sig:sig}; return; }
+  _slideTo(M,[lat,lng]);
+  if(sig!==undefined && M.sig!==sig){ M.sig=sig; M.marker.setIcon(icon); }   // troca o ícone só se mudou (ex.: ficou "sem sinal")
+}
+function motosManter(ativos){                          // remove as motos que saíram de cena
+  Object.keys(_motos).forEach(k=>{ if(ativos.indexOf(k)<0){ if(_motos[k].anim) cancelAnimationFrame(_motos[k].anim); _trackMap.removeLayer(_motos[k].marker); delete _motos[k]; } });
+}
+function cenaSet(cena){ if(_cena!==cena){ _cena=cena; _staticSig=null; _fitPend=true; if(_trackLayer) _trackLayer.clearLayers(); motosManter([]); } }  // trocou de tela → reseta
+function estatico(sig,draw){ if(sig!==_staticSig){ _staticSig=sig; _fitPend=true; if(_trackLayer) _trackLayer.clearLayers(); draw(); } }   // redesenha o estático só quando muda
+function enquadrar(pts){ if(!_fitPend||!pts.length) return; _fitPend=false; if(pts.length===1) _trackMap.setView(pts[0],15); else _trackMap.fitBounds(pts,{padding:[55,55],maxZoom:16}); }
 function trackEnsureMap(){
   if(typeof L==='undefined' || _trackMap) return;
   _trackMap=L.map('track-map',{zoomControl:true,attributionControl:false}).setView([-16.6869,-49.2648],13);
@@ -224,26 +249,81 @@ function rotaFalsaRuas(pts){
   for(let i=0;i<pts.length-1;i++){ const seg=_quinas(pts[i],pts[i+1],4); if(i>0) seg.shift(); corners=corners.concat(seg); }
   return _densify(corners, 7);
 }
-let _cliLine=null, _cliKey=null;
+let _cliLine=null, _cliDestK=null, _cliReq=null, _cliFeita=null, _cliResta=null;
+function _idxProx(line, pt){ let bi=0,bd=Infinity; for(let i=0;i<line.length;i++){ const dx=line[i][0]-pt[0], dy=line[i][1]-pt[1], d=dx*dx+dy*dy; if(d<bd){bd=d;bi=i;} } return bi; }
+function _slideAoLongo(M, line, fromIdx, toIdx, dur){     // desliza SEGUINDO os pontos da rua
+  const pts = fromIdx<=toIdx ? line.slice(fromIdx, toIdx+1) : line.slice(toIdx, fromIdx+1).reverse();
+  if(pts.length<2){ _slideTo(M, line[toIdx]); return; }
+  if(M.anim) cancelAnimationFrame(M.anim);
+  const t0=performance.now();
+  (function step(now){
+    let k=Math.min(1,(now-t0)/dur); const kk=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    const f=kk*(pts.length-1), idx=Math.floor(f), frac=f-idx;
+    const a=pts[idx], b=pts[Math.min(idx+1,pts.length-1)];
+    M.marker.setLatLng([a[0]+(b[0]-a[0])*frac, a[1]+(b[1]-a[1])*frac]);
+    if(k<1) M.anim=requestAnimationFrame(step);
+  })(performance.now());
+}
+function _motoCli(lat,lng,line,j){
+  let M=_motos['cli'];
+  if(!M){ _motos['cli']={marker:L.marker([lat,lng],{icon:_motoIcon(),zIndexOffset:1000}).addTo(_trackMap),anim:null,sig:null,idx:(j||0)}; return; }
+  const from=(typeof M.idx==='number')?M.idx:0;
+  if(line && line.length>1 && j!==from){ _slideAoLongo(M, line, from, j, 1400); M.idx=j; }
+  else { _slideTo(M,[lat,lng]); if(line) M.idx=j; }
+}
+function motoSegueLinha(chave, lat, lng, line){      // moto desliza SEGUINDO a rua (frota-foco e rota do entregador)
+  let M=_motos[chave];
+  if(!M){ _motos[chave]={marker:L.marker([lat,lng],{icon:_motoIcon(),zIndexOffset:1000}).addTo(_trackMap),anim:null,sig:null,idx:0}; return; }
+  const from=(typeof M.idx==='number')?M.idx:0;
+  if(line && line.length>1){ const j=_idxProx(line,[lat,lng]); if(j!==from){ _slideAoLongo(M,line,from,j,1400); M.idx=j; } else { M.marker.setLatLng(line[j]); } }
+  else { _slideTo(M,[lat,lng]); }
+}
+function _cliPolys(){
+  if(!_cliFeita) _cliFeita=L.polyline([],{color:'#d4b45a',weight:5,opacity:.22}).addTo(_trackMap);   // já percorrido
+  if(!_cliResta) _cliResta=L.polyline([],{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackMap);   // o que falta
+}
 function desenharTrack(dest, ent){
   trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  _trackLayer.clearLayers();
+  cenaSet('cli'); _cliPolys();
   const pts=[];
-  if(dest){ L.marker([dest.lat,dest.lng],{icon:_homeIcon()}).addTo(_trackLayer); pts.push([dest.lat,dest.lng]); }
-  if(ent){ L.marker([ent.lat,ent.lng],{icon:_motoIcon()}).addTo(_trackLayer); pts.push([ent.lat,ent.lng]); }
-  if(dest&&ent){
-    const wp=[ent,dest], key=_rotaKey(wp);
-    if(_cliLine && _cliKey===key){
-      L.polyline(_cliLine,{color:'#d4b45a',weight:4,opacity:.85,className:'track-route'}).addTo(_trackLayer);
-    } else {
-      L.polyline([[ent.lat,ent.lng],[dest.lat,dest.lng]],{color:'#d4b45a',weight:3,opacity:.5,dashArray:'6,8'}).addTo(_trackLayer);
-      if(_cliKey!==key){ _cliKey=key; rotaRuas(wp).then(line=>{ if(line && _cliKey===key){ _cliLine=line; desenharTrack(dest,ent); } }); }
+  const destK = dest? dest.lat.toFixed(5)+','+dest.lng.toFixed(5):'';
+  estatico('home:'+destK, ()=>{ if(dest) L.marker([dest.lat,dest.lng],{icon:_homeIcon()}).addTo(_trackLayer); });  // casa = estático
+  if(dest) pts.push([dest.lat,dest.lng]);
+  if(dest && ent){
+    const entPt=[ent.lat,ent.lng];
+    const linhaOk = _cliLine && _cliDestK===destK && _cliLine.length>1;
+    let desviou=true;
+    if(linhaOk){ const j0=_idxProx(_cliLine, entPt); const dx=_cliLine[j0][0]-entPt[0], dy=_cliLine[j0][1]-entPt[1]; desviou=(dx*dx+dy*dy)>(0.0012*0.0012); }  // saiu ~130m da rota?
+    const reqK = destK+'|'+ent.lat.toFixed(3)+','+ent.lng.toFixed(3);
+    if((!linhaOk || desviou) && _cliReq!==reqK){       // recalcula a rota só quando não há / mudou destino / desviou (economiza chamadas)
+      _cliReq=reqK;
+      rotaRuas([ent,dest]).then(line=>{ if(line && line.length>1){ _cliLine=line; _cliDestK=destK; if(_motos['cli']) _motos['cli'].idx=0; desenharTrack(dest,ent); } });
     }
+    if(linhaOk){
+      const j=_idxProx(_cliLine, entPt);
+      _cliFeita.setLatLngs(_cliLine.slice(0,j+1));
+      _cliResta.setLatLngs(_cliLine.slice(j)); _cliResta.setStyle({dashArray:null,opacity:.85,weight:4});
+      _motoCli(ent.lat,ent.lng,_cliLine,j);            // moto desliza PELA rua
+      pts.push(_cliLine[j]);
+    } else {
+      _cliFeita.setLatLngs([]);
+      _cliResta.setLatLngs([[ent.lat,ent.lng],[dest.lat,dest.lng]]); _cliResta.setStyle({dashArray:'6,8',opacity:.5,weight:3});
+      _motoCli(ent.lat,ent.lng,null,0);
+      pts.push([ent.lat,ent.lng]);
+    }
+    motosManter(['cli']);
+  } else {
+    if(_cliFeita) _cliFeita.setLatLngs([]); if(_cliResta) _cliResta.setLatLngs([]);
+    motosManter([]);
   }
-  if(pts.length===1) _trackMap.setView(pts[0],15);
-  else if(pts.length>1) _trackMap.fitBounds(pts,{padding:[60,60],maxZoom:16});
+  enquadrar(pts);
 }
 function pararTrackEnt(){ if(_trackUnsubEnt){ _trackUnsubEnt(); _trackUnsubEnt=null; } }
+function pararTrackTudo(){   // entrega finalizada → para de ler TUDO (não consome mais nada)
+  pararTrackEnt();
+  if(_trackUnsubDoc){ _trackUnsubDoc(); _trackUnsubDoc=null; }
+  if(_trackInt){ clearInterval(_trackInt); _trackInt=null; }
+}
 
 function atualizarRastreioCliente(){
   const e=_ultEntrega; if(!e) return;
@@ -252,12 +332,12 @@ function atualizarRastreioCliente(){
   if(e.status==='entregue'){
     title.textContent='Entrega finalizada'; st.textContent='✓ Pedido entregue'; eta.textContent='';
     sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛'; pulse.className='track-pulse done';
-    desenharTrack(dest,null); pararTrackEnt(); return;
+    desenharTrack(dest,null); pararTrackTudo(); return;
   }
   if(e.status==='nao_entregue' || e.status==='cancelado'){
     title.textContent='Entrega encerrada'; st.textContent='Entrega encerrada'; eta.textContent='';
     sub.textContent='Fale com a loja para mais informações.'; pulse.className='track-pulse off';
-    desenharTrack(dest,null); pararTrackEnt(); return;
+    desenharTrack(dest,null); pararTrackTudo(); return;
   }
   const r=_trackEntDoc;
   const viva=(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0)<150000)) ? {lat:r.lat,lng:r.lng} : null;
@@ -301,7 +381,7 @@ function atualizarRastreioCliente(){
 function iniciarRastreioCliente(id){
   if(id==='demo'){ iniciarDemoRastreio(); return; }
   const sub=()=>{
-    fdb.collection('entregas').doc(String(id)).onSnapshot(d=>{
+    _trackUnsubDoc = fdb.collection('entregas').doc(String(id)).onSnapshot(d=>{
       if(!d.exists){ $('track-st').textContent='Entrega não encontrada'; $('track-pulse').className='track-pulse off'; return; }
       _ultEntrega=d.data();
       if(_ultEntrega.entregador && !_trackUnsubEnt){
@@ -312,7 +392,7 @@ function iniciarRastreioCliente(id){
   };
   if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(sub).catch(sub); }
   else { $('track-st').textContent='Sem conexão com o servidor'; $('track-pulse').className='track-pulse off'; }
-  setInterval(atualizarRastreioCliente, 30000);
+  _trackInt = setInterval(atualizarRastreioCliente, 30000);
 }
 function desenharDemoCli(dest, ent, remPoly){
   trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
@@ -361,63 +441,77 @@ async function iniciarDemoRastreio(){
   passo();
 }
 function reiniciarDemoCliente(){
-  _cliLine=null; _cliKey=null;
+  _cliLine=null; _cliDestK=null; _cliReq=null;
   const rep=$('demo-replay'); if(rep) rep.style.display='none';
   iniciarDemoRastreio();
 }
 
 /* ===== PAINEL DA FROTA (gestor): vê todos os entregadores ao vivo ===== */
 let _frotaUnsub=null, _ultFrota=null, _frotaTimer=null;
-let _frotaSel=null, _frotaRotaUnsub=null, _frotaStops=[], _frotaFeitas=[], _focoLine=null, _focoKey=null, _demoEntregas=null;
+let _frotaSel=null, _frotaRotaUnsub=null, _frotaStops=[], _frotaFeitas=[], _focoLine=null, _focoKey=null, _focoLineKey=null, _focoStopsKey=null, _focoReq=null, _demoEntregas=null;
 const _frotaIcon=(cor,label,stale)=>L.divIcon({html:'<div class="frota-pin" style="--c:'+cor+';opacity:'+(stale?'.55':'1')+'"><span class="fd"></span><span class="fn">'+label+'</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 const _doneIcon=()=>L.divIcon({html:'<div class="track-done">✓</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 function _ehHoje(ts){ if(!ts) return false; const d=new Date(ts), n=new Date(); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate(); }
 function frotaAtualiza(){ if(_frotaSel) desenharFrotaFoco(); else desenharFrotaTodos(); }
 function desenharFrotaTodos(){
   trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
+  cenaSet('frotaTodos');
   const docs=_ultFrota||{};
-  _trackLayer.clearLayers();
-  const now=Date.now(), pts=[], rows=[];
+  const now=Date.now(), pts=[], rows=[], ativos=[], presenca=[];
   let vivos=0;
   ENTREGADORES.forEach(e=>{
     const r=docs[e.id]; let stat,cls;
     if(r && r.lat!=null){
       const age=now-(r.atualizadoEm||0);
       const viva = r.ativo && age<150000;
-      L.marker([r.lat,r.lng],{icon:_frotaIcon(e.cor,e.nome,!viva)}).addTo(_trackLayer);
-      pts.push([r.lat,r.lng]);
+      motoSet(e.id, r.lat, r.lng, _frotaIcon(e.cor,e.nome,!viva), viva?'v':'s');  // desliza
+      ativos.push(e.id); pts.push([r.lat,r.lng]); presenca.push(e.id+(viva?'1':'0'));
       if(viva){ stat='ao vivo'; cls='viva'; vivos++; }
       else { stat='há '+fmtDur(Math.max(1,Math.round(age/60000))); cls='off'; }
     } else { stat='sem sinal'; cls='off'; }
     rows.push('<div class="frota-row" onclick="selecionarFrota(\''+e.id+'\')" style="cursor:pointer"><span class="rdot" style="background:'+e.cor+'"></span><span class="rnome">'+e.nome+' ›</span><span class="rstat '+cls+'">'+stat+'</span></div>');
   });
+  motosManter(ativos);
   const list=$('frota-list'); if(list) list.innerHTML=rows.join('');
   const t=$('track-title'); if(t) t.textContent='Equipe ao vivo'+(vivos?' · '+vivos+' na rua':'');
-  if(pts.length===1) _trackMap.setView(pts[0],15);
-  else if(pts.length>1) _trackMap.fitBounds(pts,{padding:[55,55],maxZoom:16});
+  const presSig=presenca.sort().join(',');             // reenquadra só quando muda quem está em cena
+  if(presSig!==_staticSig){ _staticSig=presSig; _fitPend=true; }
+  enquadrar(pts);
 }
 function desenharFrotaFoco(){
   trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
   const id=_frotaSel, e=ENT_BY_ID[id]||{cor:'#d4b45a',nome:id};
+  cenaSet('foco:'+id);
   const r=_ultFrota?_ultFrota[id]:null;
   const pos=(r && r.lat!=null)?{lat:r.lat,lng:r.lng}:null;
   const stops=_frotaStops, feitas=_frotaFeitas;
-  _trackLayer.clearLayers();
   const pts=[];
-  feitas.forEach(s=>{ if(s.coord){ L.marker([s.coord.lat,s.coord.lng],{icon:_doneIcon()}).addTo(_trackLayer); pts.push([s.coord.lat,s.coord.lng]); } });
-  stops.forEach((s,i)=>{ if(s.coord){ L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); pts.push([s.coord.lat,s.coord.lng]); } });
-  if(pos){ L.marker([pos.lat,pos.lng],{icon:_motoIcon()}).addTo(_trackLayer); pts.push([pos.lat,pos.lng]); }
   const wp=[]; if(pos) wp.push(pos); stops.forEach(s=>{ if(s.coord) wp.push(s.coord); });
-  if(wp.length>=2){
-    const key=_rotaKey(wp);
-    if(_focoLine && _focoKey===key){ L.polyline(_focoLine,{color:e.cor,weight:4,opacity:.85}).addTo(_trackLayer); }
-    else {
-      const ehDemo=(_demoModo==='frota');
-      const fb = ehDemo ? rotaFalsaRuas(wp) : wp.map(p=>[p.lat,p.lng]);
-      L.polyline(fb,{color:e.cor,weight:ehDemo?4:3,opacity:ehDemo?.85:.5,dashArray:ehDemo?null:'6,8'}).addTo(_trackLayer);
-      if(!ehDemo && _focoKey!==key){ _focoKey=key; rotaRuas(wp).then(line=>{ if(line && _focoKey===key && _frotaSel===id){ _focoLine=line; desenharFrotaFoco(); } }); }
-    }
+  const ehDemo=(_demoModo==='frota');
+  const stopsKey = stops.map(s=>s.coord?s.coord.lat.toFixed(4)+','+s.coord.lng.toFixed(4):'').join(';');
+  const temLinha = !ehDemo && _focoLine && _focoLine.length>1 && _focoStopsKey===stopsKey;
+  let desviou=true;
+  if(temLinha && pos){ const j0=_idxProx(_focoLine,[pos.lat,pos.lng]); const dx=_focoLine[j0][0]-pos.lat, dy=_focoLine[j0][1]-pos.lng; desviou=(dx*dx+dy*dy)>(0.0012*0.0012); }
+  // recalcula a rota real só quando não há / mudaram as paradas / o entregador desviou (economiza chamadas)
+  if(wp.length>=2 && !ehDemo && (!temLinha || desviou)){
+    const reqK = stopsKey+'|'+(pos?pos.lat.toFixed(3)+','+pos.lng.toFixed(3):'');
+    if(_focoReq!==reqK){ _focoReq=reqK; rotaRuas(wp).then(line=>{ if(line && line.length>1 && _frotaSel===id){ _focoLine=line; _focoStopsKey=stopsKey; if(_motos['foco']) _motos['foco'].idx=0; desenharFrotaFoco(); } }); }
   }
+  const feitasKey = feitas.map(s=>s.coord?s.coord.lat.toFixed(5)+','+s.coord.lng.toFixed(5):'').join(';');
+  // estático = entregues(✓) + paradas(nº) + linha; NÃO depende da posição viva → não pisca a cada GPS
+  const sig = feitasKey+'#'+stopsKey+'#'+(temLinha?'L':(ehDemo?('D'+_rotaKey(wp)):'r'));
+  estatico(sig, ()=>{
+    feitas.forEach(s=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_doneIcon()}).addTo(_trackLayer); });
+    stops.forEach((s,i)=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); });
+    if(wp.length>=2){
+      if(temLinha) L.polyline(_focoLine,{color:e.cor,weight:4,opacity:.85}).addTo(_trackLayer);
+      else { const fb = ehDemo ? rotaFalsaRuas(wp) : wp.map(p=>[p.lat,p.lng]); L.polyline(fb,{color:e.cor,weight:ehDemo?4:3,opacity:ehDemo?.85:.5,dashArray:ehDemo?null:'6,8'}).addTo(_trackLayer); }
+    }
+  });
+  feitas.forEach(s=>{ if(s.coord) pts.push([s.coord.lat,s.coord.lng]); });
+  stops.forEach(s=>{ if(s.coord) pts.push([s.coord.lat,s.coord.lng]); });
+  if(pos){ if(temLinha) motoSegueLinha('foco',pos.lat,pos.lng,_focoLine); else motoSet('foco',pos.lat,pos.lng,_motoIcon()); pts.push([pos.lat,pos.lng]); }
+  motosManter(pos?['foco']:[]);
   // status do entregador
   const now=Date.now(); let statusTxt='sem sinal', viva=false;
   if(r && r.lat!=null){ const age=now-(r.atualizadoEm||0); viva=(r.ativo&&age<150000); statusTxt=viva?'ao vivo':('última posição há '+fmtDur(Math.max(1,Math.round(age/60000)))); }
@@ -437,11 +531,10 @@ function desenharFrotaFoco(){
   stops.forEach((s,i)=>{ html+='<div class="frota-row"><span class="rdot" style="background:'+e.cor+'"></span><span class="rnome">'+(i+1)+'. '+(s.cliente||'cliente')+'</span>'+(i===0?'<span class="rstat viva">próxima</span>':'')+'</div>'; });
   const list=$('frota-list'); if(list) list.innerHTML=html;
   const t=$('track-title'); if(t) t.textContent=e.nome+'  ·  '+nFeitas+'/'+(nFeitas+nFaltam)+' entregue'+((nFeitas+nFaltam)===1?'':'s');
-  if(pts.length===1) _trackMap.setView(pts[0],15);
-  else if(pts.length>1) _trackMap.fitBounds(pts,{padding:[55,55],maxZoom:16});
+  enquadrar(pts);
 }
 function selecionarFrota(id){
-  _frotaSel=id; _focoLine=null; _focoKey=null; _frotaStops=[]; _frotaFeitas=[];
+  _frotaSel=id; _focoLine=null; _focoKey=null; _focoLineKey=null; _focoStopsKey=null; _focoReq=null; _frotaStops=[]; _frotaFeitas=[];
   if(_frotaRotaUnsub){ _frotaRotaUnsub(); _frotaRotaUnsub=null; }
   if(_demoModo==='frota'){
     const arr=(_demoEntregas&&_demoEntregas[id])||[];
@@ -464,7 +557,7 @@ function selecionarFrota(id){
   desenharFrotaFoco();
 }
 function voltarFrota(){
-  _frotaSel=null; _frotaStops=[]; _frotaFeitas=[]; _focoLine=null; _focoKey=null;
+  _frotaSel=null; _frotaStops=[]; _frotaFeitas=[]; _focoLine=null; _focoKey=null; _focoLineKey=null; _focoStopsKey=null; _focoReq=null;
   if(_frotaRotaUnsub){ _frotaRotaUnsub(); _frotaRotaUnsub=null; }
   desenharFrotaTodos();
 }
@@ -506,28 +599,35 @@ function iniciarDemoFrota(){
 
 
 /* ===== modo ENTREGADOR: transmite o GPS pra coleção rastreio/{id} (igual ao painel) ===== */
-let _entWatch=null, _entLast=0, _entWake=null;
+let _entWatch=null, _entLast=0, _entWake=null, _entSent=null;
 let _entPos=null, _entRotaStops=[], _entRotaUnsub=null;
-let _entLine=null, _entLineKey=null;
+let _entLine=null, _entLineKey=null, _entReqKey=null, _entStopsKey=null;
 const _numIcon=(n)=>L.divIcon({html:'<div class="track-num">'+n+'</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 function desenharRotaEntregador(){
   trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  _trackLayer.clearLayers();
+  cenaSet('rotaEnt');
   const pts=[], stops=_entRotaStops, ent=_entPos;
-  stops.forEach((s,i)=>{ if(s.coord){ L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); pts.push([s.coord.lat,s.coord.lng]); } });
-  if(ent){ L.marker([ent.lat,ent.lng],{icon:_motoIcon()}).addTo(_trackLayer); pts.push([ent.lat,ent.lng]); }
   const wp=[]; if(ent) wp.push(ent); stops.forEach(s=>{ if(s.coord) wp.push(s.coord); });
-  if(wp.length>=2){
-    const key=_rotaKey(wp);
-    if(_entLine && _entLineKey===key){
-      L.polyline(_entLine,{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackLayer);
-    } else {
-      L.polyline(wp.map(p=>[p.lat,p.lng]),{color:'#d4b45a',weight:3,opacity:.5,dashArray:'6,8'}).addTo(_trackLayer);
-      if(_entLineKey!==key){ _entLineKey=key; rotaRuas(wp).then(line=>{ if(line && _entLineKey===key){ _entLine=line; desenharRotaEntregador(); } }); }
-    }
+  const stopsKey = stops.map(s=>s.coord?s.coord.lat.toFixed(4)+','+s.coord.lng.toFixed(4):'').join(';');
+  const temLinha = _entLine && _entLine.length>1 && _entStopsKey===stopsKey;
+  let desviou=true;
+  if(temLinha && ent){ const j0=_idxProx(_entLine,[ent.lat,ent.lng]); const dx=_entLine[j0][0]-ent.lat, dy=_entLine[j0][1]-ent.lng; desviou=(dx*dx+dy*dy)>(0.0012*0.0012); }
+  if(wp.length>=2 && (!temLinha || desviou)){      // recalcula a rota só ao não ter / mudar paradas / desviar
+    const reqK = stopsKey+'|'+(ent?ent.lat.toFixed(3)+','+ent.lng.toFixed(3):'');
+    if(_entReqKey!==reqK){ _entReqKey=reqK; rotaRuas(wp).then(line=>{ if(line && line.length>1){ _entLine=line; _entStopsKey=stopsKey; if(_motos['ent']) _motos['ent'].idx=0; desenharRotaEntregador(); } }); }
   }
-  if(pts.length===1) _trackMap.setView(pts[0],15);
-  else if(pts.length>1) _trackMap.fitBounds(pts,{padding:[55,55],maxZoom:16});
+  const sig = stopsKey+'#'+(temLinha?'L':'r');
+  estatico(sig, ()=>{
+    stops.forEach((s,i)=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); });
+    if(wp.length>=2){
+      if(temLinha) L.polyline(_entLine,{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackLayer);
+      else L.polyline(wp.map(p=>[p.lat,p.lng]),{color:'#d4b45a',weight:3,opacity:.5,dashArray:'6,8'}).addTo(_trackLayer);
+    }
+  });
+  stops.forEach(s=>{ if(s.coord) pts.push([s.coord.lat,s.coord.lng]); });
+  if(ent){ if(temLinha) motoSegueLinha('ent',ent.lat,ent.lng,_entLine); else motoSet('ent',ent.lat,ent.lng,_motoIcon()); pts.push([ent.lat,ent.lng]); }
+  motosManter(ent?['ent']:[]);
+  enquadrar(pts);
 }
 function statusRotaEntregador(d, now){
   const st=$('track-st'), sub=$('track-sub'), eta=$('track-eta'), title=$('track-title');
@@ -570,7 +670,6 @@ function transmitirEnt(d,c){
 }
 function iniciarModoEntregador(d){
   $('track-title').textContent='Transmitindo localização';
-  setTimeout(mostrarInstalar, 1200);
   $('track-st').textContent='📍 Iniciando GPS…'; $('track-eta').textContent=''; $('track-pulse').className='track-pulse';
   $('track-sub').textContent='Mantenha esta tela aberta enquanto faz as entregas.';
   if(!navigator.geolocation){ $('track-st').textContent='Este aparelho não permite localização'; $('track-pulse').className='track-pulse off'; return; }
@@ -581,9 +680,14 @@ function iniciarModoEntregador(d){
       const now=Date.now();
       _entPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
       desenharRotaEntregador();
-      if(now-_entLast>=60000){     // transmite a cada ~1 min (leve)
-        _entLast=now; transmitirEnt(d,pos.coords);
-        statusRotaEntregador(d, now);
+      if(now-_entLast>=60000){     // no máximo 1x/min
+        const moveu = !_entSent || haversine(_entSent,_entPos)*1000 >= 35;   // andou ao menos ~35m
+        const heartbeat = now-_entLast>=120000;                              // a cada 2 min envia mesmo parado (mantém "ao vivo")
+        if(moveu || heartbeat){
+          _entLast=now; _entSent={lat:_entPos.lat,lng:_entPos.lng};
+          transmitirEnt(d,pos.coords);
+          statusRotaEntregador(d, now);
+        }
       }
     },
     err=>{ $('track-st').textContent='Não consegui pegar o GPS'; $('track-sub').textContent='Permita a localização no navegador e abra o link de novo.'; $('track-pulse').className='track-pulse off'; },
@@ -721,7 +825,7 @@ function trocarEntregador(){
   try{ localStorage.removeItem('ls_ent_id'); }catch(_){}
   if(_entWatch!=null && navigator.geolocation){ navigator.geolocation.clearWatch(_entWatch); _entWatch=null; }
   if(_entRotaUnsub){ _entRotaUnsub(); _entRotaUnsub=null; }
-  _entLast=0; _entPos=null; _entRotaStops=[]; _entLine=null; _entLineKey=null;
+  _entLast=0; _entPos=null; _entRotaStops=[]; _entLine=null; _entLineKey=null; _entSent=null; _entStopsKey=null;
   mostrarEscolhaEntregador();
 }
 function entrarModoEntregadorFacil(){
