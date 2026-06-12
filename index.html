@@ -63,6 +63,19 @@
   .track-pulse.done{background:var(--calm);animation:none;box-shadow:0 0 0 4px rgba(127,174,107,.18)}
   .track-pulse.off{background:var(--text-mute);animation:none}
   .track-st{font-family:var(--ff-display);font-size:22px;font-weight:600;color:var(--text)}
+  .track-steps{margin:16px 0 0;display:flex;flex-direction:column}
+  .track-steps .stp{display:flex;align-items:flex-start;gap:11px;position:relative;padding-bottom:14px}
+  .track-steps .stp:last-child{padding-bottom:0}
+  .track-steps .stp::before{content:'';position:absolute;left:10px;top:22px;bottom:-2px;width:2px;background:rgba(248,243,230,.16)}
+  .track-steps .stp:last-child::before{display:none}
+  .track-steps .stp .bul{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid rgba(248,243,230,.25);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(248,243,230,.4);z-index:1;background:#2f4520}
+  .track-steps .stp .tx{flex:1;font-size:13.5px;color:rgba(248,243,230,.5);line-height:1.3;padding-top:1px}
+  .track-steps .stp.on .bul{border-color:#d4b45a;background:#d4b45a;color:#243a14}
+  .track-steps .stp.on .tx{color:#f8f3e6;font-weight:600}
+  .track-steps .stp.done .bul{border-color:#7fae6b;background:#7fae6b;color:#163018}
+  .track-steps .stp.done .tx{color:rgba(248,243,230,.8)}
+  .track-actions{margin-top:14px;display:none}
+  .track-actions a{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(127,174,107,.18);color:#9fd08a;border:1px solid rgba(127,174,107,.45);border-radius:12px;padding:13px;font-size:15px;font-weight:600;text-decoration:none}
   .track-eta{font-family:var(--ff-grand);font-size:40px;font-weight:700;color:var(--gold);margin-top:6px;line-height:1.05}
   .track-eta:empty{display:none}
   .track-sub{font-size:14px;color:var(--text-soft);margin-top:7px}
@@ -104,10 +117,12 @@
     <div class="track-st" id="track-st">Carregando…</div>
     <div class="track-eta" id="track-eta"></div>
     <div class="track-sub" id="track-sub"></div>
+    <div class="track-steps" id="track-steps"></div>
+    <div class="track-actions" id="track-actions"></div>
     <div id="frota-list" style="display:none"></div>
   </div>
 </div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v20</div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v23</div>
 <div id="ent-ov"><div class="ent-ov-card">
   <div class="lg">LS</div>
   <div class="ent-ov-h" id="ent-ov-h">Compartilhar localização</div>
@@ -175,6 +190,7 @@ function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-d
 
 /* ===== mapa + marcadores ===== */
 let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null, _trackUnsubDoc=null, _trackInt=null;
+let _trackRota=[], _meuId=null, _trackRotaUnsub=null;   // rota do entregador (p/ saber se a minha entrega é a próxima)
 const _homeIcon = ()=>L.divIcon({html:'<div class="track-home-badge"><span>🏠</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🏍️</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 /* ===== marcadores que DESLIZAM (em vez de redesenhar tudo a cada posição) ===== */
@@ -322,19 +338,66 @@ function pararTrackEnt(){ if(_trackUnsubEnt){ _trackUnsubEnt(); _trackUnsubEnt=n
 function pararTrackTudo(){   // entrega finalizada → para de ler TUDO (não consome mais nada)
   pararTrackEnt();
   if(_trackUnsubDoc){ _trackUnsubDoc(); _trackUnsubDoc=null; }
+  if(_trackRotaUnsub){ _trackRotaUnsub(); _trackRotaUnsub=null; }
   if(_trackInt){ clearInterval(_trackInt); _trackInt=null; }
 }
 
+// ===== estágios do cliente =====
+function _setSteps(etapa){   // 'aguardando' | 'pego' | 'a_caminho' | 'entregue' | 'encerrada'
+  const box=$('track-steps'); if(!box) return;
+  if(etapa==='encerrada'){ box.innerHTML=''; return; }
+  const ordem=['aguardando','pego','a_caminho','entregue'];
+  const labels={aguardando:'Pedido recebido — aguardando rota', pego:'Entregador pegou seu pedido', a_caminho:'A caminho de você', entregue:'Pedido entregue'};
+  const at=ordem.indexOf(etapa);
+  box.innerHTML=ordem.map((k,i)=>{
+    const cls = i<at ? 'done' : (i===at ? 'on' : '');
+    const ic  = i<at ? '✓' : '';
+    return `<div class="stp ${cls}"><span class="bul">${ic}</span><span class="tx">${labels[k]}</span></div>`;
+  }).join('');
+}
+function _waNumRastreio(raw){
+  let d=(raw||'').replace(/\D/g,''); if(!d) return '';
+  if(d.length>11 && d.startsWith('55')) d=d.slice(2);
+  d=d.replace(/^0+/,'');
+  if(d.length===8||d.length===9) d='62'+d;
+  if(d.length===10) d=d.slice(0,2)+'9'+d.slice(2);
+  return d.length===11 ? '55'+d : '';
+}
+function renderTalkEntregador(e, nomeEnt){
+  const box=$('track-actions'); if(!box) return;
+  const cfg=ENT_BY_ID[e.entregador]||{}; const num=_waNumRastreio(cfg.fone||'');
+  if(!num){ box.style.display='none'; box.innerHTML=''; return; }
+  const nm=nomeEnt||'o entregador';
+  const msg=`Olá! Sou o cliente da Loretto Scarpa${e.cliente?(' ('+String(e.cliente).split(' ')[0]+')'):''} e estou acompanhando a minha entrega.`;
+  box.innerHTML=`<a href="https://wa.me/${num}?text=${encodeURIComponent(msg)}" target="_blank">💬 Falar com ${nm}</a>`;
+  box.style.display='';
+}
+function _posicaoNaRota(meuId){           // usa _trackRota (já só em_rota, ordenada). atual = sou o próximo
+  const arr=_trackRota||[];
+  const idx=arr.findIndex(s=>String(s.id)===String(meuId));
+  if(idx<0) return {pos:1,total:arr.length||1,atual:true};
+  return {pos:idx+1, total:arr.length, atual: idx===0};
+}
+function _previsaoChegada(viva, meuId){    // estimativa sequencial pela ordem da rota até a minha entrega
+  const arr=_trackRota||[]; if(!arr.length) return null;
+  let cur = viva || (arr[0] && arr[0].coord) || null; if(!cur) return null;
+  let t=Date.now();
+  for(const s of arr){ if(s.coord){ t += legMin(cur, s.coord)*60000 + 4*60000; cur=s.coord; } if(String(s.id)===String(meuId)) return t; }
+  return t;
+}
 function atualizarRastreioCliente(){
   const e=_ultEntrega; if(!e) return;
   const dest=coordOf(e);
   const st=$('track-st'), eta=$('track-eta'), sub=$('track-sub'), pulse=$('track-pulse'), title=$('track-title');
+  const acts=$('track-actions'); if(acts){ acts.style.display='none'; acts.innerHTML=''; }
   if(e.status==='entregue'){
+    _setSteps('entregue');
     title.textContent='Entrega finalizada'; st.textContent='✓ Pedido entregue'; eta.textContent='';
     sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛'; pulse.className='track-pulse done';
     desenharTrack(dest,null); pararTrackTudo(); return;
   }
   if(e.status==='nao_entregue' || e.status==='cancelado'){
+    _setSteps('encerrada');
     title.textContent='Entrega encerrada'; st.textContent='Entrega encerrada'; eta.textContent='';
     sub.textContent='Fale com a loja para mais informações.'; pulse.className='track-pulse off';
     desenharTrack(dest,null); pararTrackTudo(); return;
@@ -342,13 +405,35 @@ function atualizarRastreioCliente(){
   const r=_trackEntDoc;
   const viva=(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0)<150000)) ? {lat:r.lat,lng:r.lng} : null;
   if(e.status==='aguardando'){
+    _setSteps('aguardando');
+    title.textContent='Acompanhe sua entrega';
     st.textContent='Preparando seu pedido'; eta.textContent='';
-    sub.textContent='Assim que sair para entrega, você vê o trajeto aqui.'; pulse.className='track-pulse off';
+    sub.textContent='Estamos separando o seu pedido. Assim que um entregador sair com ele, você acompanha por aqui.'; pulse.className='track-pulse off';
     desenharTrack(dest,null); return;
   }
   // em rota
-  const _nome = (_trackEntDoc && _trackEntDoc.nome) ? String(_trackEntDoc.nome).trim().split(' ')[0] : '';
+  const _nome = (_trackEntDoc && _trackEntDoc.nome) ? String(_trackEntDoc.nome).trim().split(' ')[0]
+              : ((ENT_BY_ID[e.entregador]||{}).nome ? String(ENT_BY_ID[e.entregador].nome).split(' ')[0] : '');
   const _aCaminho = _nome ? `${_nome} está a caminho com o seu pedido! 🏍️` : 'Seu pedido está a caminho 🏍️';
+  const posInfo=_posicaoNaRota(_meuId);
+  renderTalkEntregador(e, _nome);   // botão "Falar com o entregador" (se o telefone dele estiver cadastrado)
+
+  if(!posInfo.atual){
+    // entregador pegou, mas a SUA entrega ainda não é a próxima → não mostra a moto se movendo
+    _setSteps('pego');
+    title.textContent='Acompanhe sua entrega';
+    st.textContent = _nome ? `${_nome} pegou o seu pedido 🛵` : 'Seu pedido saiu para entrega 🛵';
+    const antes=posInfo.pos-1;
+    const prev=_previsaoChegada(viva, _meuId);
+    eta.textContent = prev ? `~${fmtClock(prev)}` : '';
+    sub.innerHTML = `${antes>0?`Faltam <b>${antes}</b> ${antes===1?'entrega':'entregas'} antes da sua. `:''}${prev?`Previsão de chegada por volta de <b>${fmtClock(prev)}</b>.`:'Logo o trajeto até você aparece aqui.'}`;
+    pulse.className='track-pulse off';
+    desenharTrack(dest,null);   // sem a moto no mapa ainda
+    return;
+  }
+  // é a próxima entrega → agora sim mostra a moto indo (se tiver GPS)
+  _setSteps('a_caminho');
+  title.textContent='Acompanhe sua entrega';
   if(viva && dest){
     const min=Math.max(1,Math.round(legMin(viva,dest)));
     st.textContent=_aCaminho;
@@ -363,13 +448,8 @@ function atualizarRastreioCliente(){
     const restante=Math.round((arrTs-Date.now())/60000);
     const rodape='<br><span style="opacity:.7;font-size:.88em">A localização atualiza assim que o entregador reabrir o app.</span>';
     st.textContent=_aCaminho;
-    if(restante>2){
-      eta.textContent=`~${fmtDur(restante)}`;
-      sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · chegada prevista por volta de <b>${fmtClock(arrTs)}</b>${rodape}`;
-    } else {
-      eta.textContent='Chegando!';
-      sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · deve chegar a qualquer momento${rodape}`;
-    }
+    if(restante>2){ eta.textContent=`~${fmtDur(restante)}`; sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · chegada prevista por volta de <b>${fmtClock(arrTs)}</b>${rodape}`; }
+    else { eta.textContent='Chegando!'; sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · deve chegar a qualquer momento${rodape}`; }
     pulse.className='track-pulse off'; desenharTrack(dest,{lat:r.lat,lng:r.lng});
   } else {
     st.textContent=_aCaminho; eta.textContent='';
@@ -380,12 +460,20 @@ function atualizarRastreioCliente(){
 
 function iniciarRastreioCliente(id){
   if(id==='demo'){ iniciarDemoRastreio(); return; }
+  _meuId=String(id);
   const sub=()=>{
     _trackUnsubDoc = fdb.collection('entregas').doc(String(id)).onSnapshot(d=>{
       if(!d.exists){ $('track-st').textContent='Entrega não encontrada'; $('track-pulse').className='track-pulse off'; return; }
       _ultEntrega=d.data();
       if(_ultEntrega.entregador && !_trackUnsubEnt){
         _trackUnsubEnt=fdb.collection('rastreio').doc(_ultEntrega.entregador).onSnapshot(rd=>{ _trackEntDoc=rd.exists?rd.data():null; atualizarRastreioCliente(); },()=>{});
+      }
+      if(_ultEntrega.entregador && !_trackRotaUnsub){   // rota do entregador → saber se a minha entrega é a próxima
+        _trackRotaUnsub=fdb.collection('entregas').where('entregador','==',_ultEntrega.entregador).onSnapshot(snap=>{
+          const arr=[]; snap.forEach(doc=>{ const x=doc.data()||{}; if(x.status==='em_rota'){ arr.push({id:doc.id, coord:coordOf(x), ordem:(typeof x.ordemManual==='number'?x.ordemManual:9999), roteadoEm:x.roteadoEm||0}); } });
+          arr.sort((a,b)=>(a.ordem-b.ordem)||(a.roteadoEm-b.roteadoEm));
+          _trackRota=arr; atualizarRastreioCliente();
+        },()=>{ _trackRota=[]; });   // se a leitura da rota for bloqueada, segue como antes (mostra ao vivo)
       }
       atualizarRastreioCliente();
     }, ()=>{ $('track-st').textContent='Não consegui carregar agora'; });
@@ -773,12 +861,13 @@ function reiniciarDemoEnt(){
 
 /* ===== modo "sou entregador" (escolhe o nome) ===== */
 const ENTREGADORES=[
-  {id:'gustavo',nome:'Gustavo',cor:'#d4b45a'},
-  {id:'joao',nome:'João',cor:'#6fb0a6'},
-  {id:'ewald',nome:'Ewald',cor:'#c97b5a'},
-  {id:'gregory',nome:'Gregory',cor:'#d99a5a'},
-  {id:'hugo',nome:'Hugo',cor:'#8e9cd6'},
-  {id:'flavio',nome:'Flavio',cor:'#cf8aa8'}
+  {id:'gustavo',nome:'Gustavo',cor:'#d4b45a',fone:'5562998563940'},
+  {id:'joao',nome:'João',cor:'#6fb0a6',fone:'5562992271346'},
+  {id:'ewald',nome:'Ewald',cor:'#c97b5a',fone:'5562982181829'},
+  {id:'gregory',nome:'Gregory',cor:'#d99a5a',fone:'5562983129321'},
+  {id:'hugo',nome:'Hugo',cor:'#8e9cd6',fone:'5562986218413'},
+  {id:'flavio',nome:'Flavio',cor:'#cf8aa8',fone:'5562999296060'},
+  {id:'junior',nome:'Junior',cor:'#7fb0d4',fone:'5562993741125'}
 ];
 const ENT_BY_ID = ENTREGADORES.reduce((m,e)=>{m[e.id]=e;return m;},{});
 function mostrarEscolhaEntregador(){
