@@ -63,6 +63,10 @@
   .track-home-badge>span{transform:rotate(45deg);font-size:15px}
   .track-num{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:2px solid var(--gold);color:var(--gold-lt);font-family:var(--ff-body);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
   .track-card{position:relative;z-index:3;background:linear-gradient(180deg,var(--surface),var(--surface-2));border-top:1px solid var(--line-strong);border-radius:18px 18px 0 0;padding:18px 20px 24px;text-align:left;box-shadow:0 -16px 34px -8px rgba(0,0,0,.5)}
+  .track-ola{display:none;margin-bottom:12px}
+  .track-ola.on{display:block}
+  .track-ola .lbl{display:block;font-family:var(--ff-eyebrow);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mute);margin-bottom:1px}
+  .track-ola .nm{font-family:var(--ff-display);font-style:italic;font-size:18px;color:var(--gold-lt)}
   .track-pulse{width:11px;height:11px;border-radius:50%;background:var(--calm);margin:0 auto 12px;animation:trackpulse 1.6s ease-out infinite}
   @keyframes trackpulse{0%{box-shadow:0 0 0 0 rgba(127,174,107,.55)}70%{box-shadow:0 0 0 13px rgba(127,174,107,0)}100%{box-shadow:0 0 0 0 rgba(127,174,107,0)}}
   .track-pulse.done{background:var(--calm);animation:none;box-shadow:0 0 0 4px rgba(127,174,107,.18)}
@@ -149,6 +153,7 @@
   </div>
   <div id="track-map"></div>
   <div class="track-card">
+    <div class="track-ola" id="track-ola"></div>
     <div class="track-pulse" id="track-pulse"></div>
     <div class="courier" id="track-courier">
       <span class="cbadge" id="track-cbadge">·</span>
@@ -164,7 +169,7 @@
     <div id="frota-list" style="display:none"></div>
   </div>
 </div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v26</div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v29</div>
 <div id="ent-ov"><div class="ent-ov-card">
   <div class="lg">LS</div>
   <div class="ent-ov-h" id="ent-ov-h">Compartilhar localização</div>
@@ -374,6 +379,7 @@ function desenharTrack(dest, ent){
     if(_cliFeita) _cliFeita.setLatLngs([]); if(_cliResta) _cliResta.setLatLngs([]);
     motosManter([]);
   }
+  if(dest && ent){ try{ const b=_trackMap.getBounds(); if(!b.contains([ent.lat,ent.lng]) || !b.contains([dest.lat,dest.lng])) _fitPend=true; }catch(_){} }  // reenquadra p/ mostrar entregador + cliente quando algum sai da tela
   enquadrar(pts);
 }
 function pararTrackEnt(){ if(_trackUnsubEnt){ _trackUnsubEnt(); _trackUnsubEnt=null; } }
@@ -465,6 +471,7 @@ function atualizarRastreioCliente(){
   const st=$('track-st'), sub=$('track-sub'), pulse=$('track-pulse'), live=$('track-live');
   const top=$('track-top'); if(top) top.classList.add('cliente');   // esconde o título grande só na tela do cliente
   if(pulse) pulse.style.display='none';                             // no design novo o "ao vivo" fica no topo
+  // (sem identificação de nome no card — decisão do cliente)
   if(e.status==='entregue'){
     _setSteps('entregue'); _hideCourier(); _hideFila(); _etaPlain('');
     st.textContent='✓ Pedido entregue';
