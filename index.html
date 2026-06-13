@@ -41,11 +41,16 @@
   html,body{height:100%}
   body{font-family:var(--ff-body);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
   #track-view{display:flex;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
-  .track-top{position:relative;z-index:3;padding:20px 20px 16px;text-align:center;background:linear-gradient(180deg,var(--bg2),var(--bg));box-shadow:0 16px 24px -12px rgba(0,0,0,.55)}
-  .track-logo{width:46px;height:46px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold);font-family:var(--ff-grand);font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 0 4px rgba(212,180,90,.08)}
-  .track-brand-txt{font-family:var(--ff-eyebrow);letter-spacing:.34em;font-size:11px;color:var(--gold);margin-top:9px}
-  .track-h{font-family:var(--ff-display);font-size:23px;font-weight:600;margin-top:3px}
-  .track-h::after{content:'';display:block;width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:10px auto 0}
+  .track-top{position:relative;z-index:3;display:flex;align-items:center;flex-wrap:wrap;gap:11px;padding:14px 18px;background:linear-gradient(180deg,var(--bg2),var(--bg));box-shadow:0 16px 24px -12px rgba(0,0,0,.55)}
+  .track-logo{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line-strong);color:var(--gold);font-family:var(--ff-display);font-style:italic;font-weight:500;font-size:20px;display:flex;align-items:center;justify-content:center}
+  .track-brandbox{display:flex;flex-direction:column;justify-content:center}
+  .track-brand-txt{font-family:var(--ff-display);font-style:italic;font-weight:500;font-size:20px;letter-spacing:.01em;color:var(--gold);line-height:1.02}
+  .track-brand-sub{font-family:var(--ff-eyebrow);letter-spacing:.2em;font-size:8px;text-transform:uppercase;color:rgba(248,243,230,.4);margin-top:2px}
+  .track-live{margin-left:auto;display:none;align-items:center;gap:6px;font-family:var(--ff-eyebrow);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--calm)}
+  .track-live.on{display:flex}
+  .track-live .d{width:7px;height:7px;border-radius:50%;background:var(--calm);animation:trackpulse 1.8s ease-out infinite}
+  .track-h{width:100%;font-family:var(--ff-display);font-size:18px;font-weight:600;margin-top:4px}
+  .track-top.cliente .track-h{display:none}
   #track-map{flex:1;min-height:0;width:100%;background:var(--bg2)}
   #track-map .leaflet-tile-pane{filter:saturate(.6) sepia(.22) brightness(.97) contrast(.92)}
   .track-divicon{background:transparent!important;border:0!important;box-shadow:none!important}
@@ -57,12 +62,20 @@
   .track-home-badge{position:absolute;left:-16px;top:-32px;width:32px;height:32px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);background:var(--surface-2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
   .track-home-badge>span{transform:rotate(45deg);font-size:15px}
   .track-num{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:2px solid var(--gold);color:var(--gold-lt);font-family:var(--ff-body);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
-  .track-card{position:relative;z-index:3;background:linear-gradient(180deg,var(--surface),var(--surface-2));border-top:1px solid rgba(212,180,90,.25);padding:22px 20px 26px;text-align:center;box-shadow:0 -16px 34px -8px rgba(0,0,0,.5)}
+  .track-card{position:relative;z-index:3;background:linear-gradient(180deg,var(--surface),var(--surface-2));border-top:1px solid var(--line-strong);border-radius:18px 18px 0 0;padding:18px 20px 24px;text-align:left;box-shadow:0 -16px 34px -8px rgba(0,0,0,.5)}
   .track-pulse{width:11px;height:11px;border-radius:50%;background:var(--calm);margin:0 auto 12px;animation:trackpulse 1.6s ease-out infinite}
   @keyframes trackpulse{0%{box-shadow:0 0 0 0 rgba(127,174,107,.55)}70%{box-shadow:0 0 0 13px rgba(127,174,107,0)}100%{box-shadow:0 0 0 0 rgba(127,174,107,0)}}
   .track-pulse.done{background:var(--calm);animation:none;box-shadow:0 0 0 4px rgba(127,174,107,.18)}
   .track-pulse.off{background:var(--text-mute);animation:none}
-  .track-st{font-family:var(--ff-display);font-size:22px;font-weight:600;color:var(--text)}
+  .courier{display:none;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
+  .courier.on{display:flex}
+  .cbadge{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-weight:600;font-size:18px;color:var(--bg);background:var(--c,#d4b45a);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+  .cmeta{min-width:0}
+  .cmeta b{display:block;font-family:var(--ff-body);font-weight:600;font-size:15px;color:var(--text);line-height:1.15}
+  .cmeta span{font-family:var(--ff-eyebrow);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute)}
+  .wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-left:auto;background:rgba(255,255,255,.05);color:var(--text-soft);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-family:var(--ff-body);font-weight:600;font-size:13px;text-decoration:none;cursor:pointer;white-space:nowrap}
+  .wa-btn svg{width:18px;height:18px;flex:none}
+  .track-st{font-family:var(--ff-display);font-size:21px;font-weight:600;color:var(--text);line-height:1.2}
   .track-steps{margin:16px 0 0;display:flex;flex-direction:column}
   .track-steps .stp{display:flex;align-items:flex-start;gap:11px;position:relative;padding-bottom:14px}
   .track-steps .stp:last-child{padding-bottom:0}
@@ -74,11 +87,30 @@
   .track-steps .stp.on .tx{color:#f8f3e6;font-weight:600}
   .track-steps .stp.done .bul{border-color:#7fae6b;background:#7fae6b;color:#163018}
   .track-steps .stp.done .tx{color:rgba(248,243,230,.8)}
-  .track-actions{margin-top:14px;display:none}
-  .track-actions a{display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(127,174,107,.18);color:#9fd08a;border:1px solid rgba(127,174,107,.45);border-radius:12px;padding:13px;font-size:15px;font-weight:600;text-decoration:none}
-  .track-eta{font-family:var(--ff-grand);font-size:40px;font-weight:700;color:var(--gold);margin-top:6px;line-height:1.05}
+  .track-actions{display:none}
+  .track-eta{font-family:var(--ff-grand);font-size:40px;font-weight:700;color:var(--gold);margin-top:8px;line-height:1.05}
   .track-eta:empty{display:none}
-  .track-sub{font-size:14px;color:var(--text-soft);margin-top:7px}
+  .track-eta.hero{display:flex;align-items:baseline;gap:8px}
+  .track-eta.hero .num{font-family:var(--ff-grand);font-weight:700;font-size:46px;line-height:.9;color:var(--gold-lt)}
+  .track-eta.hero .unit{font-family:var(--ff-grand);font-size:14px;color:var(--gold)}
+  .track-eta.hero .when{margin-left:auto;text-align:right;font-family:var(--ff-eyebrow);font-size:10px;line-height:1.5;letter-spacing:.04em;color:var(--text-mute)}
+  .track-eta.hero .when b{display:block;color:var(--text-soft);font-size:13px;font-family:var(--ff-body)}
+  .fila{display:none;margin-top:12px;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line-strong);border-radius:13px;background:rgba(212,180,90,.08)}
+  .fila.on{display:flex}
+  .fila .fnum{flex:none;font-family:var(--ff-grand);font-weight:700;font-size:34px;line-height:.9;color:var(--gold-lt)}
+  .fila .ftx{font-size:13px;line-height:1.45;color:var(--text-soft)}
+  .fila .ftx b{color:var(--text);font-weight:600}
+  .track-sub{font-size:13.5px;color:var(--text-soft);margin-top:11px;line-height:1.5}
+  .track-sub b{color:var(--text)}
+  .falar-modal{background:var(--surface);border:1px solid var(--line-strong);border-radius:18px;padding:22px;width:min(360px,92vw);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);margin:auto}
+  .falar-titulo{font-family:var(--ff-display);font-weight:600;font-size:21px;color:var(--text);margin-bottom:3px}
+  .falar-sub{font-size:13px;color:var(--text-mute);margin-bottom:18px}
+  .falar-opt{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:54px;border-radius:13px;font-family:var(--ff-body);font-size:16px;font-weight:700;margin-bottom:10px;text-decoration:none;border:1px solid;cursor:pointer}
+  .falar-opt.wa{background:rgba(127,174,107,.16);color:var(--calm);border-color:rgba(127,174,107,.45)}
+  .falar-opt.tel{background:rgba(111,176,166,.16);color:#8fcabd;border-color:rgba(111,176,166,.45)}
+  .falar-opt svg{width:21px;height:21px;flex:none}
+  .falar-cancel{margin-top:2px;background:none;border:none;color:var(--text-mute);font-size:14px;cursor:pointer;padding:8px;font-family:var(--ff-body)}
+  #falar-bg{position:fixed;inset:0;background:rgba(12,16,8,.72);backdrop-filter:blur(4px);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px}
   /* modo "sou entregador" */
   #ent-ov{display:none;position:fixed;inset:0;z-index:50;background:rgba(20,30,12,.95);align-items:center;justify-content:center;padding:24px}
   .ent-ov-card{max-width:380px;width:100%;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--line-strong);border-radius:18px;padding:24px 20px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.8)}
@@ -106,23 +138,33 @@
 </head>
 <body>
 <div id="track-view">
-  <div class="track-top">
-    <div class="track-logo">LS</div>
-    <div class="track-brand-txt">LORETTO SCARPA</div>
+  <div class="track-top" id="track-top">
+    <div class="track-logo">L</div>
+    <div class="track-brandbox">
+      <div class="track-brand-txt">Loretto Scarpa</div>
+      <div class="track-brand-sub">Sapatos Masculinos</div>
+    </div>
+    <div class="track-live" id="track-live"><span class="d"></span>ao vivo</div>
     <div class="track-h" id="track-title">Acompanhe sua entrega</div>
   </div>
   <div id="track-map"></div>
   <div class="track-card">
     <div class="track-pulse" id="track-pulse"></div>
+    <div class="courier" id="track-courier">
+      <span class="cbadge" id="track-cbadge">·</span>
+      <span class="cmeta"><b id="track-cnome">Entregador</b><span>Entregador Loretto</span></span>
+      <a class="wa-btn" id="track-wa" href="#" onclick="abrirFalar(event)"><svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.42 3 4.04 8.38 4.04 15c0 2.12.55 4.13 1.6 5.93L4 29l8.28-1.6A11.93 11.93 0 0 0 16.04 27c6.62 0 12-5.38 12-12S22.66 3 16.04 3zm0 21.6c-1.86 0-3.68-.5-5.27-1.45l-.38-.22-4.91.95.98-4.79-.25-.39A9.56 9.56 0 0 1 6.44 15c0-5.3 4.3-9.6 9.6-9.6s9.6 4.3 9.6 9.6-4.3 9.6-9.6 9.6zm5.27-7.18c-.29-.14-1.71-.84-1.97-.94-.26-.1-.46-.14-.65.14-.19.29-.74.94-.91 1.13-.17.19-.34.21-.62.07-.29-.14-1.22-.45-2.32-1.43-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.59.13-.13.29-.34.43-.51.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.65-1.56-.89-2.14-.23-.56-.47-.48-.65-.49l-.55-.01c-.19 0-.5.07-.76.36s-1 .98-1 2.38 1.02 2.76 1.17 2.95c.14.19 2.01 3.07 4.87 4.3.68.29 1.21.47 1.62.6.68.22 1.3.19 1.79.12.55-.08 1.71-.7 1.95-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.33z"/></svg> Falar com o entregador</a>
+    </div>
     <div class="track-st" id="track-st">Carregando…</div>
     <div class="track-eta" id="track-eta"></div>
+    <div class="fila" id="track-fila"></div>
     <div class="track-sub" id="track-sub"></div>
     <div class="track-steps" id="track-steps"></div>
     <div class="track-actions" id="track-actions"></div>
     <div id="frota-list" style="display:none"></div>
   </div>
 </div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v23</div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v26</div>
 <div id="ent-ov"><div class="ent-ov-card">
   <div class="lg">LS</div>
   <div class="ent-ov-h" id="ent-ov-h">Compartilhar localização</div>
@@ -347,7 +389,7 @@ function _setSteps(etapa){   // 'aguardando' | 'pego' | 'a_caminho' | 'entregue'
   const box=$('track-steps'); if(!box) return;
   if(etapa==='encerrada'){ box.innerHTML=''; return; }
   const ordem=['aguardando','pego','a_caminho','entregue'];
-  const labels={aguardando:'Pedido recebido — aguardando rota', pego:'Entregador pegou seu pedido', a_caminho:'A caminho de você', entregue:'Pedido entregue'};
+  const labels={aguardando:'Pedido recebido — aguardando rota', pego:'Entregador coletou seu pedido', a_caminho:'A caminho de você', entregue:'Pedido entregue'};
   const at=ordem.indexOf(etapa);
   box.innerHTML=ordem.map((k,i)=>{
     const cls = i<at ? 'done' : (i===at ? 'on' : '');
@@ -363,15 +405,47 @@ function _waNumRastreio(raw){
   if(d.length===10) d=d.slice(0,2)+'9'+d.slice(2);
   return d.length===11 ? '55'+d : '';
 }
-function renderTalkEntregador(e, nomeEnt){
-  const box=$('track-actions'); if(!box) return;
-  const cfg=ENT_BY_ID[e.entregador]||{}; const num=_waNumRastreio(cfg.fone||'');
-  if(!num){ box.style.display='none'; box.innerHTML=''; return; }
-  const nm=nomeEnt||'o entregador';
-  const msg=`Olá! Sou o cliente da Loretto Scarpa${e.cliente?(' ('+String(e.cliente).split(' ')[0]+')'):''} e estou acompanhando a minha entrega.`;
-  box.innerHTML=`<a href="https://wa.me/${num}?text=${encodeURIComponent(msg)}" target="_blank">💬 Falar com ${nm}</a>`;
-  box.style.display='';
+const _WA_SVG='<svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.42 3 4.04 8.38 4.04 15c0 2.12.55 4.13 1.6 5.93L4 29l8.28-1.6A11.93 11.93 0 0 0 16.04 27c6.62 0 12-5.38 12-12S22.66 3 16.04 3zm0 21.6c-1.86 0-3.68-.5-5.27-1.45l-.38-.22-4.91.95.98-4.79-.25-.39A9.56 9.56 0 0 1 6.44 15c0-5.3 4.3-9.6 9.6-9.6s9.6 4.3 9.6 9.6-4.3 9.6-9.6 9.6zm5.27-7.18c-.29-.14-1.71-.84-1.97-.94-.26-.1-.46-.14-.65.14-.19.29-.74.94-.91 1.13-.17.19-.34.21-.62.07-.29-.14-1.22-.45-2.32-1.43-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.59.13-.13.29-.34.43-.51.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.65-1.56-.89-2.14-.23-.56-.47-.48-.65-.49l-.55-.01c-.19 0-.5.07-.76.36s-1 .98-1 2.38 1.02 2.76 1.17 2.95c.14.19 2.01 3.07 4.87 4.3.68.29 1.21.47 1.62.6.68.22 1.3.19 1.79.12.55-.08 1.71-.7 1.95-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.33z"/></svg>';
+let _courierFor=null;
+function _hideCourier(){ const c=$('track-courier'); if(c) c.classList.remove('on'); const lv=$('track-live'); if(lv) lv.classList.remove('on'); }
+function renderCourier(e, nome){
+  const c=$('track-courier'); if(!c) return;
+  const cfg=ENT_BY_ID[e.entregador]||{};
+  const nm = nome || (cfg.nome?String(cfg.nome).split(' ')[0]:'Entregador');
+  if(_courierFor!==e.entregador){
+    _courierFor=e.entregador;
+    const badge=$('track-cbadge'); if(badge){ badge.textContent=(nm[0]||'•').toUpperCase(); badge.style.setProperty('--c', cfg.cor||'#d4b45a'); }
+    const cn=$('track-cnome'); if(cn) cn.textContent=nm;
+    const wa=$('track-wa'); if(wa) wa.style.display = _waNumRastreio(cfg.fone||'') ? '' : 'none';
+  }
+  c.classList.add('on');
 }
+function fecharFalar(){ const el=$('falar-bg'); if(el) el.remove(); }
+function abrirFalar(ev){
+  if(ev) ev.preventDefault();
+  const e=_ultEntrega; if(!e) return;
+  const cfg=ENT_BY_ID[e.entregador]||{}; const num=_waNumRastreio(cfg.fone||''); if(!num) return;
+  const nm = cfg.nome?String(cfg.nome).split(' ')[0]:'o entregador';
+  const cli=e.cliente?String(e.cliente).trim().split(/\s+/)[0]:'';
+  const msg = cli ? `Olá! Aqui é ${cli}, cliente da Loretto Scarpa. Estou acompanhando a minha entrega e gostaria de falar com você. 🙂`
+                  : `Olá! Sou cliente da Loretto Scarpa e estou acompanhando a minha entrega. Gostaria de falar com você. 🙂`;
+  const wa=`https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  fecharFalar();
+  const bg=document.createElement('div'); bg.id='falar-bg';
+  bg.innerHTML=`<div class="falar-modal">
+    <div class="falar-titulo">Falar com ${nm}</div>
+    <div class="falar-sub">Como você quer falar?</div>
+    <a class="falar-opt wa" href="${wa}" target="_blank" onclick="fecharFalar()">${_WA_SVG} WhatsApp</a>
+    <a class="falar-opt tel" href="tel:+${num}" onclick="fecharFalar()">📞 Ligar</a>
+    <button class="falar-cancel" onclick="fecharFalar()">Cancelar</button>
+  </div>`;
+  bg.addEventListener('click', ev2=>{ if(ev2.target===bg) fecharFalar(); });
+  document.body.appendChild(bg);
+}
+function _etaHero(num,unit,whenTs){ const eta=$('track-eta'); if(!eta) return; eta.classList.add('hero'); eta.innerHTML=`<span class="num">${num}</span><span class="unit">${unit}</span><span class="when">chegada prevista<b>~${fmtClock(whenTs)}</b></span>`; }
+function _etaPlain(txt){ const eta=$('track-eta'); if(!eta) return; eta.classList.remove('hero'); eta.textContent=txt||''; }
+function _fila(antes, prevTs){ const f=$('track-fila'); if(!f) return; if(antes>0){ f.classList.add('on'); f.innerHTML=`<span class="fnum">${antes}</span><span class="ftx">${antes===1?'entrega':'entregas'} antes da sua na rota${prevTs?`<br><b>previsão ~${fmtClock(prevTs)}</b>`:''}</span>`; } else { f.classList.remove('on'); f.innerHTML=''; } }
+function _hideFila(){ const f=$('track-fila'); if(f){ f.classList.remove('on'); f.innerHTML=''; } }
 function _posicaoNaRota(meuId){           // usa _trackRota (já só em_rota, ordenada). atual = sou o próximo
   const arr=_trackRota||[];
   const idx=arr.findIndex(s=>String(s.id)===String(meuId));
@@ -388,72 +462,73 @@ function _previsaoChegada(viva, meuId){    // estimativa sequencial pela ordem d
 function atualizarRastreioCliente(){
   const e=_ultEntrega; if(!e) return;
   const dest=coordOf(e);
-  const st=$('track-st'), eta=$('track-eta'), sub=$('track-sub'), pulse=$('track-pulse'), title=$('track-title');
-  const acts=$('track-actions'); if(acts){ acts.style.display='none'; acts.innerHTML=''; }
+  const st=$('track-st'), sub=$('track-sub'), pulse=$('track-pulse'), live=$('track-live');
+  const top=$('track-top'); if(top) top.classList.add('cliente');   // esconde o título grande só na tela do cliente
+  if(pulse) pulse.style.display='none';                             // no design novo o "ao vivo" fica no topo
   if(e.status==='entregue'){
-    _setSteps('entregue');
-    title.textContent='Entrega finalizada'; st.textContent='✓ Pedido entregue'; eta.textContent='';
-    sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛'; pulse.className='track-pulse done';
+    _setSteps('entregue'); _hideCourier(); _hideFila(); _etaPlain('');
+    st.textContent='✓ Pedido entregue';
+    sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛';
     desenharTrack(dest,null); pararTrackTudo(); return;
   }
   if(e.status==='nao_entregue' || e.status==='cancelado'){
-    _setSteps('encerrada');
-    title.textContent='Entrega encerrada'; st.textContent='Entrega encerrada'; eta.textContent='';
-    sub.textContent='Fale com a loja para mais informações.'; pulse.className='track-pulse off';
+    _setSteps('encerrada'); _hideCourier(); _hideFila(); _etaPlain('');
+    st.textContent='Entrega encerrada';
+    sub.textContent='Fale com a loja para mais informações.';
     desenharTrack(dest,null); pararTrackTudo(); return;
   }
   const r=_trackEntDoc;
   const viva=(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0)<150000)) ? {lat:r.lat,lng:r.lng} : null;
   if(e.status==='aguardando'){
-    _setSteps('aguardando');
-    title.textContent='Acompanhe sua entrega';
-    st.textContent='Preparando seu pedido'; eta.textContent='';
-    sub.textContent='Estamos separando o seu pedido. Assim que um entregador sair com ele, você acompanha por aqui.'; pulse.className='track-pulse off';
+    _setSteps('aguardando'); _hideCourier(); _hideFila(); _etaPlain('');
+    st.textContent='Preparando seu pedido';
+    sub.textContent='Estamos separando o seu pedido. Assim que um entregador sair com ele, você acompanha por aqui.';
     desenharTrack(dest,null); return;
   }
   // em rota
   const _nome = (_trackEntDoc && _trackEntDoc.nome) ? String(_trackEntDoc.nome).trim().split(' ')[0]
               : ((ENT_BY_ID[e.entregador]||{}).nome ? String(ENT_BY_ID[e.entregador].nome).split(' ')[0] : '');
-  const _aCaminho = _nome ? `${_nome} está a caminho com o seu pedido! 🏍️` : 'Seu pedido está a caminho 🏍️';
+  const _aCaminho = _nome ? `${_nome} está a caminho com o seu pedido!` : 'Seu pedido está a caminho';
   const posInfo=_posicaoNaRota(_meuId);
-  renderTalkEntregador(e, _nome);   // botão "Falar com o entregador" (se o telefone dele estiver cadastrado)
+  renderCourier(e, _nome);
 
   if(!posInfo.atual){
-    // entregador pegou, mas a SUA entrega ainda não é a próxima → não mostra a moto se movendo
+    // entregador coletou, mas a SUA entrega ainda não é a próxima → não mostra a moto se movendo
     _setSteps('pego');
-    title.textContent='Acompanhe sua entrega';
-    st.textContent = _nome ? `${_nome} pegou o seu pedido 🛵` : 'Seu pedido saiu para entrega 🛵';
+    if(live) live.classList.remove('on');
+    st.textContent = _nome ? `${_nome} coletou o seu pedido` : 'Seu pedido saiu para entrega';
     const antes=posInfo.pos-1;
     const prev=_previsaoChegada(viva, _meuId);
-    eta.textContent = prev ? `~${fmtClock(prev)}` : '';
-    sub.innerHTML = `${antes>0?`Faltam <b>${antes}</b> ${antes===1?'entrega':'entregas'} antes da sua. `:''}${prev?`Previsão de chegada por volta de <b>${fmtClock(prev)}</b>.`:'Logo o trajeto até você aparece aqui.'}`;
-    pulse.className='track-pulse off';
+    _etaPlain(''); _fila(antes, prev);
+    sub.innerHTML = 'Assim que chegar a sua vez, a moto aparece aqui no mapa em tempo real.';
     desenharTrack(dest,null);   // sem a moto no mapa ainda
     return;
   }
   // é a próxima entrega → agora sim mostra a moto indo (se tiver GPS)
-  _setSteps('a_caminho');
-  title.textContent='Acompanhe sua entrega';
+  _setSteps('a_caminho'); _hideFila();
   if(viva && dest){
     const min=Math.max(1,Math.round(legMin(viva,dest)));
+    if(live) live.classList.add('on');
     st.textContent=_aCaminho;
-    if(min<=2){ eta.textContent='Chegando!'; sub.textContent=`${_nome||'O entregador'} está pertinho de você.`; }
-    else { eta.textContent=`~${fmtDur(min)}`; sub.innerHTML=`Chegada prevista por volta de <b>${fmtClock(Date.now()+min*60000)}</b>`; }
-    pulse.className='track-pulse'; desenharTrack(dest,viva);
+    if(min<=2){ _etaPlain('Chegando!'); sub.textContent=`${_nome||'O entregador'} está pertinho de você.`; }
+    else { _etaHero(min,'min',Date.now()+min*60000); sub.innerHTML='Acompanhe a moto no mapa em tempo real.'; }
+    desenharTrack(dest,viva);
   } else if(r && r.lat!=null && dest){
-    // GPS parado: usa a ÚLTIMA posição enviada — há quanto tempo + previsão (min + horário)
+    // GPS parado: usa a ÚLTIMA posição enviada
+    if(live) live.classList.remove('on');
     const ageMin=Math.max(1,Math.round((Date.now()-(r.atualizadoEm||Date.now()))/60000));
     const travel=Math.max(1,Math.round(legMin({lat:r.lat,lng:r.lng},dest)));
     const arrTs=(r.atualizadoEm||Date.now())+travel*60000;
     const restante=Math.round((arrTs-Date.now())/60000);
     const rodape='<br><span style="opacity:.7;font-size:.88em">A localização atualiza assim que o entregador reabrir o app.</span>';
     st.textContent=_aCaminho;
-    if(restante>2){ eta.textContent=`~${fmtDur(restante)}`; sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · chegada prevista por volta de <b>${fmtClock(arrTs)}</b>${rodape}`; }
-    else { eta.textContent='Chegando!'; sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · deve chegar a qualquer momento${rodape}`; }
-    pulse.className='track-pulse off'; desenharTrack(dest,{lat:r.lat,lng:r.lng});
+    if(restante>2){ _etaHero(restante,'min',arrTs); sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b>${rodape}`; }
+    else { _etaPlain('Chegando!'); sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · deve chegar a qualquer momento${rodape}`; }
+    desenharTrack(dest,{lat:r.lat,lng:r.lng});
   } else {
-    st.textContent=_aCaminho; eta.textContent='';
-    sub.textContent='Aguardando o sinal de GPS do entregador…'; pulse.className='track-pulse';
+    if(live) live.classList.add('on');
+    _etaPlain(''); st.textContent=_aCaminho;
+    sub.textContent='Aguardando o sinal de GPS do entregador…';
     desenharTrack(dest,null);
   }
 }
@@ -495,36 +570,48 @@ async function iniciarDemoRastreio(){
   const rep=$('demo-replay'); if(rep) rep.style.display='none';
   const ov=$('ent-ov'); if(ov) ov.style.display='none';
   const tr=$('ent-trocar'); if(tr) tr.style.display='none';
-  $('track-title').textContent='Acompanhe sua entrega';
-  const dest={lat:-16.7055,lng:-49.2650}, start={lat:-16.6800,lng:-49.2920};
-  const nome='Gustavo', cli='Bruno';
   const run=++_demoRun;
-  let poly=await rotaRuas([start,dest]);
-  if(run!==_demoRun) return;
+  const espera=ms=>new Promise(r=>setTimeout(r,ms));
+  const dest={lat:-16.7055,lng:-49.2650}, start={lat:-16.6800,lng:-49.2920};
+  _meuId='demo';
+
+  // 1) AGUARDANDO ROTA
+  _trackEntDoc=null; _trackRota=[];
+  _ultEntrega={id:'demo',cliente:'Bruno',status:'aguardando',entregador:'gustavo',coord:dest};
+  atualizarRastreioCliente();
+  await espera(3600); if(run!==_demoRun) return;
+
+  // 2) ENTREGADOR PEGOU — a sua é a 3ª da rota (faltam 2), ainda SEM moto no mapa
+  _trackEntDoc={nome:'Gustavo',ativo:true,lat:start.lat,lng:start.lng,atualizadoEm:Date.now()};
+  _trackRota=[
+    {id:'x1',coord:{lat:-16.690,lng:-49.272},ordem:1,roteadoEm:1},
+    {id:'x2',coord:{lat:-16.697,lng:-49.262},ordem:2,roteadoEm:2},
+    {id:'demo',coord:dest,ordem:3,roteadoEm:3}
+  ];
+  _ultEntrega.status='em_rota';
+  atualizarRastreioCliente();
+  await espera(4400); if(run!==_demoRun) return;
+
+  // 3) A CAMINHO DE VOCÊ — a sua virou a 1ª da fila; a moto anda pela rua até você
+  _trackRota=[{id:'demo',coord:dest,ordem:1,roteadoEm:1}];
+  let poly=await rotaRuas([start,dest]); if(run!==_demoRun) return;
   if(!poly){ poly=rotaFalsaRuas([start,dest]); }
   try{ _trackMap.fitBounds(poly,{padding:[55,55],maxZoom:15}); }catch(_){}
-  const inc=Math.max(1, Math.round(poly.length/42));
+  const inc=Math.max(1, Math.round(poly.length/40));
   let i=0;
   const passo=()=>{
     if(run!==_demoRun) return;
     if(i>=poly.length){
-      const last=poly[poly.length-1];
-      desenharDemoCli(dest,{lat:last[0],lng:last[1]},null);
-      $('track-title').textContent='Entrega finalizada';
-      $('track-st').textContent='✓ Pedido entregue'; $('track-eta').textContent='';
-      $('track-sub').innerHTML='Esta entrega foi concluída. Obrigado por comprar na Loretto Scarpa 💛';
-      $('track-pulse').className='track-pulse done';
+      // 4) ENTREGUE
+      _trackEntDoc={nome:'Gustavo',ativo:true,lat:dest.lat,lng:dest.lng,atualizadoEm:Date.now()};
+      _ultEntrega.status='entregue';
+      atualizarRastreioCliente();
       if(rep) rep.style.display='inline-block';
       return;
     }
-    const ent={lat:poly[i][0],lng:poly[i][1]};
-    desenharDemoCli(dest, ent, poly.slice(i));
-    const min=Math.max(1,Math.round(legMin(ent,dest)));
-    $('track-st').textContent = cli+', o '+nome+' está a caminho com o seu pedido! 🏍️';
-    if(min<=2){ $('track-eta').textContent='Chegando!'; $('track-sub').textContent=nome+' está pertinho de você.'; }
-    else { $('track-eta').textContent='~'+fmtDur(min); $('track-sub').innerHTML='Chegada prevista por volta de <b>'+fmtClock(Date.now()+min*60000)+'</b>'; }
-    $('track-pulse').className='track-pulse';
-    i+=inc; setTimeout(passo, 900);
+    _trackEntDoc={nome:'Gustavo',ativo:true,lat:poly[i][0],lng:poly[i][1],atualizadoEm:Date.now()};
+    atualizarRastreioCliente();
+    i+=inc; setTimeout(passo, 820);
   };
   passo();
 }
