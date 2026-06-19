@@ -1,1100 +1,355 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#283d1a">
-<title>Loretto Scarpa · Acompanhe sua entrega</title>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Loretto Entregas">
-<script>
-(function(){
-  var ICON='data:image/png;base64,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'; window.__LS_ICON=ICON;
-  var l=document.createElement('link'); l.rel='apple-touch-icon'; l.href=ICON; document.head.appendChild(l);
-  try{
-    var mf={name:'Loretto \u2022 Entregas',short_name:'Loretto',start_url:location.href,scope:'./',display:'standalone',background_color:'#283d1a',theme_color:'#283d1a',icons:[{src:ICON,sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
-    var ml=document.createElement('link'); ml.rel='manifest';
-    ml.href='data:application/manifest+json,'+encodeURIComponent(JSON.stringify(mf)); document.head.appendChild(ml);
-  }catch(e){}
-})();
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Playfair+Display:wght@600;700&family=Barlow:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rastreio da equipe · Loretto Scarpa</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#283d1a; --bg2:#1f3013;
-    --surface:#374f24; --surface-2:#46672f; --surface-3:#60813e;
-    --line:rgba(212,180,90,.18); --line-strong:rgba(212,180,90,.34);
-    --text:#f8f3e6; --text-soft:rgba(248,243,230,.78); --text-mute:rgba(248,243,230,.5);
-    --gold:#d4b45a; --gold-lt:#ebd48a;
-    --calm:#7fae6b;
-    --ff-display:'Cormorant Garamond',serif;
-    --ff-grand:'Playfair Display',serif;
-    --ff-eyebrow:'Barlow',sans-serif;
-    --ff-body:'Jost',sans-serif;
+    --bg:#14210d; --bg2:#1b2a12; --surface:#22311a; --surface-2:#2b3c20;
+    --gold:#c9a950; --gold-lt:#d8bd66; --teal:#6fb0a6; --calm:#9bbcdc; --ink:#14210d;
+    --text:#f4ecd8; --text-soft:#cfc8b2; --text-mute:#9a9c86;
+    --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.16);
+    --ff-display:'Playfair Display',serif; --ff-eyebrow:'Barlow',sans-serif; --ff-data:'DM Mono',monospace;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{font-family:var(--ff-body);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
-  #track-view{display:flex;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
-  .track-top{position:relative;z-index:3;display:flex;align-items:center;flex-wrap:wrap;gap:11px;padding:14px 18px;background:linear-gradient(180deg,var(--bg2),var(--bg));box-shadow:0 16px 24px -12px rgba(0,0,0,.55)}
-  .track-logo{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--line-strong);color:var(--gold);font-family:var(--ff-display);font-style:italic;font-weight:500;font-size:20px;display:flex;align-items:center;justify-content:center}
-  .track-brandbox{display:flex;flex-direction:column;justify-content:center}
-  .track-brand-txt{font-family:var(--ff-display);font-style:italic;font-weight:500;font-size:20px;letter-spacing:.01em;color:var(--gold);line-height:1.02}
-  .track-brand-sub{font-family:var(--ff-eyebrow);letter-spacing:.2em;font-size:8px;text-transform:uppercase;color:rgba(248,243,230,.4);margin-top:2px}
-  .track-live{margin-left:auto;display:none;align-items:center;gap:6px;font-family:var(--ff-eyebrow);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--calm)}
-  .track-live.on{display:flex}
-  .track-live .d{width:7px;height:7px;border-radius:50%;background:var(--calm);animation:trackpulse 1.8s ease-out infinite}
-  .track-h{width:100%;font-family:var(--ff-display);font-size:18px;font-weight:600;margin-top:4px}
-  .track-top.cliente .track-h{display:none}
-  #track-map{flex:1;min-height:0;width:100%;background:var(--bg2)}
-  #track-map .leaflet-tile-pane{filter:saturate(.6) sepia(.22) brightness(.97) contrast(.92)}
-  .track-divicon{background:transparent!important;border:0!important;box-shadow:none!important}
-  .track-route{stroke-linecap:round;stroke-dasharray:1 11;animation:trackdash 1.1s linear infinite}
-  @keyframes trackdash{to{stroke-dashoffset:-12}}
-  .track-moto-halo{position:absolute;left:-23px;top:-23px;width:46px;height:46px;border-radius:50%;background:rgba(212,180,90,.30);animation:motoping 1.9s ease-out infinite}
-  @keyframes motoping{0%{transform:scale(.45);opacity:.85}100%{transform:scale(1.7);opacity:0}}
-  .track-moto-dot{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e7cd84,var(--gold));border:2px solid #fffdf6;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 9px rgba(0,0,0,.55)}
-  .track-home-badge{position:absolute;left:-16px;top:-32px;width:32px;height:32px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);background:var(--surface-2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
-  .track-home-badge>span{transform:rotate(45deg);font-size:15px}
-  .track-num{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:2px solid var(--gold);color:var(--gold-lt);font-family:var(--ff-body);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
-  .track-card{position:relative;z-index:3;background:linear-gradient(180deg,var(--surface),var(--surface-2));border-top:1px solid var(--line-strong);border-radius:18px 18px 0 0;padding:18px 20px 24px;text-align:left;box-shadow:0 -16px 34px -8px rgba(0,0,0,.5)}
-  .track-ola{display:none;margin-bottom:12px}
-  .track-ola.on{display:block}
-  .track-ola .lbl{display:block;font-family:var(--ff-eyebrow);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mute);margin-bottom:1px}
-  .track-ola .nm{font-family:var(--ff-display);font-style:italic;font-size:18px;color:var(--gold-lt)}
-  .track-pulse{width:11px;height:11px;border-radius:50%;background:var(--calm);margin:0 auto 12px;animation:trackpulse 1.6s ease-out infinite}
-  @keyframes trackpulse{0%{box-shadow:0 0 0 0 rgba(127,174,107,.55)}70%{box-shadow:0 0 0 13px rgba(127,174,107,0)}100%{box-shadow:0 0 0 0 rgba(127,174,107,0)}}
-  .track-pulse.done{background:var(--calm);animation:none;box-shadow:0 0 0 4px rgba(127,174,107,.18)}
-  .track-pulse.off{background:var(--text-mute);animation:none}
-  .courier{display:none;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap}
-  .courier.on{display:flex}
-  .cbadge{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--ff-display);font-weight:600;font-size:18px;color:var(--bg);background:var(--c,#d4b45a);box-shadow:0 0 0 3px rgba(255,255,255,.08)}
-  .cmeta{min-width:0}
-  .cmeta b{display:block;font-family:var(--ff-body);font-weight:600;font-size:15px;color:var(--text);line-height:1.15}
-  .cmeta span{font-family:var(--ff-eyebrow);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute)}
-  .wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-left:auto;background:rgba(255,255,255,.05);color:var(--text-soft);border:1px solid var(--line);border-radius:11px;padding:11px 14px;font-family:var(--ff-body);font-weight:600;font-size:13px;text-decoration:none;cursor:pointer;white-space:nowrap}
-  .wa-btn svg{width:18px;height:18px;flex:none}
-  .track-st{font-family:var(--ff-display);font-size:21px;font-weight:600;color:var(--text);line-height:1.2}
-  .track-steps{margin:16px 0 0;display:flex;flex-direction:column}
-  .track-steps .stp{display:flex;align-items:flex-start;gap:11px;position:relative;padding-bottom:14px}
-  .track-steps .stp:last-child{padding-bottom:0}
-  .track-steps .stp::before{content:'';position:absolute;left:10px;top:22px;bottom:-2px;width:2px;background:rgba(248,243,230,.16)}
-  .track-steps .stp:last-child::before{display:none}
-  .track-steps .stp .bul{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid rgba(248,243,230,.25);display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(248,243,230,.4);z-index:1;background:#2f4520}
-  .track-steps .stp .tx{flex:1;font-size:13.5px;color:rgba(248,243,230,.5);line-height:1.3;padding-top:1px}
-  .track-steps .stp.on .bul{border-color:#d4b45a;background:#d4b45a;color:#243a14}
-  .track-steps .stp.on .tx{color:#f8f3e6;font-weight:600}
-  .track-steps .stp.done .bul{border-color:#7fae6b;background:#7fae6b;color:#163018}
-  .track-steps .stp.done .tx{color:rgba(248,243,230,.8)}
-  .track-actions{display:none}
-  .track-eta{font-family:var(--ff-grand);font-size:40px;font-weight:700;color:var(--gold);margin-top:8px;line-height:1.05}
-  .track-eta:empty{display:none}
-  .track-eta.hero{display:flex;align-items:baseline;gap:8px}
-  .track-eta.hero .num{font-family:var(--ff-grand);font-weight:700;font-size:46px;line-height:.9;color:var(--gold-lt)}
-  .track-eta.hero .unit{font-family:var(--ff-grand);font-size:14px;color:var(--gold)}
-  .track-eta.hero .when{margin-left:auto;text-align:right;font-family:var(--ff-eyebrow);font-size:10px;line-height:1.5;letter-spacing:.04em;color:var(--text-mute)}
-  .track-eta.hero .when b{display:block;color:var(--text-soft);font-size:13px;font-family:var(--ff-body)}
-  .fila{display:none;margin-top:12px;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line-strong);border-radius:13px;background:rgba(212,180,90,.08)}
-  .fila.on{display:flex}
-  .fila .fnum{flex:none;font-family:var(--ff-grand);font-weight:700;font-size:34px;line-height:.9;color:var(--gold-lt)}
-  .fila .ftx{font-size:13px;line-height:1.45;color:var(--text-soft)}
-  .fila .ftx b{color:var(--text);font-weight:600}
-  .track-sub{font-size:13.5px;color:var(--text-soft);margin-top:11px;line-height:1.5}
-  .track-sub b{color:var(--text)}
-  .falar-modal{background:var(--surface);border:1px solid var(--line-strong);border-radius:18px;padding:22px;width:min(360px,92vw);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);margin:auto}
-  .falar-titulo{font-family:var(--ff-display);font-weight:600;font-size:21px;color:var(--text);margin-bottom:3px}
-  .falar-sub{font-size:13px;color:var(--text-mute);margin-bottom:18px}
-  .falar-opt{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:54px;border-radius:13px;font-family:var(--ff-body);font-size:16px;font-weight:700;margin-bottom:10px;text-decoration:none;border:1px solid;cursor:pointer}
-  .falar-opt.wa{background:rgba(127,174,107,.16);color:var(--calm);border-color:rgba(127,174,107,.45)}
-  .falar-opt.tel{background:rgba(111,176,166,.16);color:#8fcabd;border-color:rgba(111,176,166,.45)}
-  .falar-opt svg{width:21px;height:21px;flex:none}
-  .falar-cancel{margin-top:2px;background:none;border:none;color:var(--text-mute);font-size:14px;cursor:pointer;padding:8px;font-family:var(--ff-body)}
-  #falar-bg{position:fixed;inset:0;background:rgba(12,16,8,.72);backdrop-filter:blur(4px);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px}
-  /* modo "sou entregador" */
-  #ent-ov{display:none;position:fixed;inset:0;z-index:50;background:rgba(20,30,12,.95);align-items:center;justify-content:center;padding:24px}
-  .ent-ov-card{max-width:380px;width:100%;background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--line-strong);border-radius:18px;padding:24px 20px;text-align:center;box-shadow:0 24px 60px -20px rgba(0,0,0,.8)}
-  .ent-ov-card .lg{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold);font-family:var(--ff-grand);font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
-  .ent-ov-h{font-family:var(--ff-display);font-size:22px;font-weight:600;color:var(--text)}
-  .ent-ov-sub{color:var(--text-soft);font-size:13.5px;margin:6px 0 18px}
-  .ent-btn{width:100%;border:1px solid var(--line-strong);background:rgba(212,180,90,.08);color:var(--text);font-size:16px;font-weight:600;padding:14px;border-radius:12px;margin-bottom:10px;cursor:pointer;font-family:var(--ff-body);display:flex;align-items:center;gap:10px;justify-content:center}
-  .ent-btn:active{background:rgba(212,180,90,.18)}
-  .ent-btn .dot{width:11px;height:11px;border-radius:50%}
-  #ent-trocar{display:none;position:fixed;right:8px;bottom:4px;font-size:11px;color:rgba(248,243,230,.55);z-index:9;cursor:pointer;text-decoration:underline}
-  /* painel da frota (gestor) */
-  .frota-pin{position:absolute;left:-7px;top:-7px;display:flex;align-items:center;gap:5px;white-space:nowrap}
-  .frota-pin .fd{width:15px;height:15px;border-radius:50%;background:var(--c,#d4b45a);border:2px solid #fffdf6;box-shadow:0 2px 6px rgba(0,0,0,.5);flex:none}
-  .frota-pin .fn{background:rgba(20,30,12,.82);border:1px solid var(--line);color:#f8f3e6;font-size:11px;font-weight:600;padding:1px 6px;border-radius:7px;font-family:var(--ff-body)}
-  #frota-list{margin-top:6px;text-align:left;max-height:38vh;overflow:auto}
-  .frota-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
-  .frota-row:last-child{border-bottom:0}
-  .frota-row .rdot{width:11px;height:11px;border-radius:50%;flex:none}
-  .frota-row .rnome{font-weight:600;color:var(--text);font-size:14px;flex:1}
-  .frota-row .rstat{font-size:12px;color:var(--text-soft);font-family:var(--ff-body)}
-  .frota-row .rstat.viva{color:#7dd08f}
-  .frota-row .rstat.off{color:var(--text-mute)}
-  .track-done{position:absolute;left:-11px;top:-11px;width:22px;height:22px;border-radius:50%;background:rgba(40,61,26,.9);border:2px solid #7dd08f;color:#7dd08f;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:.85;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ff-eyebrow);-webkit-font-smoothing:antialiased}
+
+  .ent-live-ov{position:fixed;inset:0;z-index:340;background:var(--bg);display:flex;flex-direction:column;overscroll-behavior:contain}
+  .ent-live-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:2}
+  .ent-live-title{font-family:var(--ff-display);font-size:21px;color:var(--gold-lt);flex:1;font-weight:600}
+  .ent-live-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px calc(24px + env(safe-area-inset-bottom)) 16px;max-width:640px;margin:0 auto;width:100%}
+  .ent-live-map{height:300px;border-radius:14px;overflow:hidden;border:1px solid var(--line-strong);background:var(--surface);margin-bottom:8px}
+  .ent-live-map .leaflet-container{height:100%;width:100%;background:#1b2a12}
+  .ent-live-mapnote{font-size:12px;color:var(--text-mute);margin:0 2px 14px;text-align:center}
+  .ent-live-sec{font-family:var(--ff-eyebrow);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);margin:6px 2px 10px}
+
+  .elv-back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--gold-lt);font-family:var(--ff-eyebrow);font-weight:600;font-size:13.5px;cursor:pointer;padding:2px 0;margin-bottom:10px}
+
+  .elv-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+  .elv-card.foco{border-color:var(--line-strong)}
+  .elv-head{display:flex;align-items:center;gap:11px;padding:13px 14px;cursor:pointer}
+  .elv-head:hover{background:var(--surface-2)}
+  .elv-dot{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+  .elv-id{flex:1;min-width:0}
+  .elv-name{font-family:var(--ff-display);font-size:17px;color:var(--text);font-weight:600;line-height:1.15}
+  .elv-when{font-size:11px;color:var(--text-mute);margin-top:2px}
+  .elv-live{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;flex:none}
+  .elv-live.on{color:#bfe6a8;background:rgba(127,174,107,.2)}
+  .elv-live.off{color:var(--text-mute);background:rgba(255,255,255,.05)}
+  .elv-chev{color:var(--text-mute);font-size:18px;margin-left:2px;flex:none}
+  .elv-counts{display:flex;gap:8px;font-size:12px;color:var(--text-soft);padding:0 14px 12px;flex-wrap:wrap}
+  .elv-pill{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:3px 9px}
+  .elv-pill b{color:var(--text)}
+  .elv-pill.rota b{color:var(--teal)}
+  .elv-pill.ok b{color:var(--calm)}
+  .elv-body{border-top:1px solid var(--line);padding:12px 14px;background:var(--bg2)}
+  .elv-caminho{font-size:13.5px;color:var(--gold-lt);background:rgba(212,180,90,.1);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:12px}
+  .elv-grp{font-family:var(--ff-eyebrow);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-mute);margin:8px 0 7px}
+  .elv-grp:first-child{margin-top:0}
+  .elv-row{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:7px}
+  .elv-row.fail{opacity:.92}
+  .elv-row .num{font-family:var(--ff-eyebrow);font-size:11px;font-weight:700;color:var(--ink);background:var(--gold);min-width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px}
+  .elv-row .hr{font-family:var(--ff-data);font-size:11.5px;color:var(--gold-lt);background:rgba(212,180,90,.14);border:1px solid var(--line-strong);border-radius:7px;padding:1px 6px;flex:none;margin-top:1px;white-space:nowrap}
+  .elv-row .hr.fail{color:#e6b0a8;background:rgba(210,90,72,.14)}
+  .elv-row .info{flex:1;min-width:0}
+  .elv-row .cli{font-size:14px;color:var(--text)}
+  .elv-row.fail .cli{color:var(--text-soft)}
+  .elv-row .sub{font-size:11.5px;color:var(--text-mute);margin-top:1px;display:block}
+  .elv-row .tag{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:20px;margin-top:4px;display:inline-block}
+  .elv-row .tag.ok{color:#bfe6a8;background:rgba(127,174,107,.18)}
+  .elv-row .tag.fail{color:#e6b0a8;background:rgba(210,90,72,.16)}
+  .elv-empty{font-size:12.5px;color:var(--text-mute);padding:4px 2px 6px}
+  .elv-acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .elv-wa{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;text-decoration:none;color:#bfe6a8;background:rgba(127,174,107,.16);border:1px solid rgba(127,174,107,.34);border-radius:9px;padding:6px 11px}
+
+  .demo-badge{position:fixed;left:10px;bottom:10px;z-index:400;font-family:var(--ff-data);font-size:10px;color:rgba(244,236,216,.5);background:rgba(20,33,13,.8);border:1px solid var(--line);border-radius:8px;padding:5px 9px;pointer-events:none}
+
+  .ls-moto{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);font-size:16px}
+  .ls-num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--gold);color:#14210d;font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+  .ls-done{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#7dd08f;color:#0c2c1a;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+  @media(max-width:560px){ .ent-live-map{height:240px} }
 </style>
 </head>
 <body>
-<div id="track-view">
-  <div class="track-top" id="track-top">
-    <div class="track-logo">L</div>
-    <div class="track-brandbox">
-      <div class="track-brand-txt">Loretto Scarpa</div>
-      <div class="track-brand-sub">Sapatos Masculinos</div>
-    </div>
-    <div class="track-live" id="track-live"><span class="d"></span>ao vivo</div>
-    <div class="track-h" id="track-title">Acompanhe sua entrega</div>
-  </div>
-  <div id="track-map"></div>
-  <div class="track-card">
-    <div class="track-ola" id="track-ola"></div>
-    <div class="track-pulse" id="track-pulse"></div>
-    <div class="courier" id="track-courier">
-      <span class="cbadge" id="track-cbadge">·</span>
-      <span class="cmeta"><b id="track-cnome">Entregador</b><span>Entregador Loretto</span></span>
-      <a class="wa-btn" id="track-wa" href="#" onclick="abrirFalar(event)"><svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.42 3 4.04 8.38 4.04 15c0 2.12.55 4.13 1.6 5.93L4 29l8.28-1.6A11.93 11.93 0 0 0 16.04 27c6.62 0 12-5.38 12-12S22.66 3 16.04 3zm0 21.6c-1.86 0-3.68-.5-5.27-1.45l-.38-.22-4.91.95.98-4.79-.25-.39A9.56 9.56 0 0 1 6.44 15c0-5.3 4.3-9.6 9.6-9.6s9.6 4.3 9.6 9.6-4.3 9.6-9.6 9.6zm5.27-7.18c-.29-.14-1.71-.84-1.97-.94-.26-.1-.46-.14-.65.14-.19.29-.74.94-.91 1.13-.17.19-.34.21-.62.07-.29-.14-1.22-.45-2.32-1.43-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.59.13-.13.29-.34.43-.51.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.65-1.56-.89-2.14-.23-.56-.47-.48-.65-.49l-.55-.01c-.19 0-.5.07-.76.36s-1 .98-1 2.38 1.02 2.76 1.17 2.95c.14.19 2.01 3.07 4.87 4.3.68.29 1.21.47 1.62.6.68.22 1.3.19 1.79.12.55-.08 1.71-.7 1.95-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.33z"/></svg> Falar com o entregador</a>
-    </div>
-    <div class="track-st" id="track-st">Carregando…</div>
-    <div class="track-eta" id="track-eta"></div>
-    <div class="fila" id="track-fila"></div>
-    <div class="track-sub" id="track-sub"></div>
-    <div class="track-steps" id="track-steps"></div>
-    <div class="track-actions" id="track-actions"></div>
-    <div id="frota-list" style="display:none"></div>
-  </div>
-</div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v29</div>
-<div id="ent-ov"><div class="ent-ov-card">
-  <div class="lg">LS</div>
-  <div class="ent-ov-h" id="ent-ov-h">Compartilhar localização</div>
-  <div class="ent-ov-sub" id="ent-ov-sub">Toque no seu nome pra começar:</div>
-  <div id="ent-ov-list"></div>
-</div></div>
-<div id="ent-trocar" onclick="trocarEntregador()">trocar entregador</div>
-<div id="inst-bar" style="display:none;position:fixed;left:10px;right:10px;bottom:10px;z-index:60;background:linear-gradient(135deg,#46672f,#374f24);border:1px solid var(--line-strong);border-radius:14px;padding:12px 14px;align-items:center;gap:10px;box-shadow:0 14px 30px -10px rgba(0,0,0,.7)">
-  <div style="flex:1;color:#f8f3e6;font-size:13px;line-height:1.35"><b style="color:var(--gold-lt)">📲 Adicione à tela de início</b><br>Vira um ícone no seu celular — abra a localização num toque, sem procurar o link.</div>
-  <button onclick="instalarApp()" style="background:linear-gradient(180deg,#ebd48a,#d4b45a);color:#283d1a;border:0;font-weight:700;padding:9px 13px;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap">Adicionar</button>
-  <div onclick="fecharInstalar()" style="color:var(--text-soft);font-size:20px;cursor:pointer;padding:0 2px;line-height:1">×</div>
-</div>
-<div id="inst-ov" style="display:none;position:fixed;inset:0;z-index:61;background:rgba(20,30,12,.94);align-items:center;justify-content:center;padding:24px">
-  <div class="ent-ov-card" style="max-width:360px">
-    <div class="ent-ov-h" id="inst-h">Adicionar à tela de início</div>
-    <div id="inst-steps" style="color:var(--text-soft);font-size:14px;line-height:1.65;text-align:left;margin:12px 0 16px"></div>
-    <button class="ent-btn" style="background:linear-gradient(180deg,#ebd48a,#d4b45a);color:#283d1a" onclick="document.getElementById('inst-ov').style.display='none'">Entendi</button>
-  </div>
-</div>
-<div id="demo-badge" style="display:none;position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:14;background:rgba(212,180,90,.16);border:1px solid var(--line-strong);color:var(--gold-lt);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:5px 14px;border-radius:999px;font-family:var(--ff-eyebrow,sans-serif);backdrop-filter:blur(4px)">Demonstração</div>
-<button id="demo-replay" style="display:none;position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:14;background:linear-gradient(180deg,#ebd48a,#d4b45a);color:#283d1a;border:0;font-weight:700;font-size:14px;padding:12px 22px;border-radius:13px;cursor:pointer;font-family:inherit;box-shadow:0 8px 22px -8px rgba(0,0,0,.7)" onclick="reiniciarDemo()">↻ Repetir demonstração</button>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<div id="ent-live-ov" class="ent-live-ov">
+  <div class="ent-live-head">
+    <div class="ent-live-title" id="ent-live-title">🛵 Equipe ao vivo</div>
+  </div>
+  <div class="ent-live-body">
+    <div id="map-live" class="ent-live-map"></div>
+    <div id="ent-live-mapnote" class="ent-live-mapnote"></div>
+    <div class="ent-live-sec" id="ent-live-sec">Toque em um entregador para ver a rota dele</div>
+    <div id="ent-live-list"></div>
+  </div>
+</div>
+
+<div class="demo-badge">DEMO · dados fictícios · movimento simulado</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCogQoTSULCdC1JhTb0IUilWAIA1itBJ8U",
-  authDomain: "loretto-scarpa-l-icr.firebaseapp.com",
-  projectId: "loretto-scarpa-l-icr",
-  storageBucket: "loretto-scarpa-l-icr.firebasestorage.app",
-  messagingSenderId: "428188657366",
-  appId: "1:428188657366:web:091e9d32ddfd712c83cb77"
-};
-const $ = id => document.getElementById(id);
-let fdb=null, FIREBASE_ON=false;
-try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initializeApp(FIREBASE_CONFIG); fdb=firebase.firestore(); FIREBASE_ON=true; } }catch(e){ console.warn('firebase', e); }
+/* ============================================================
+   Rastreio da equipe (gestor) — versão do overlay com foco.
+   Posições SIMULADAS (sem Firebase) e dados fictícios.
+   ============================================================ */
 
-/* ===== token opaco (mesmo do app) ===== */
-function _ub64u(s){ s=String(s||'').replace(/-/g,'+').replace(/_/g,'/'); try{ return decodeURIComponent(escape(atob(s))); }catch(_){ return ''; } }
-function _chk(id){ let n=0; const s='LSx'+id; for(let i=0;i<s.length;i++) n=(n*31+s.charCodeAt(i))%100000; return n; }
-function idDeToken(tok){ const m=/^LSR1\|(.+)\|(\d+)$/.exec(_ub64u(tok)); if(!m) return null; return _chk(m[1])===Number(m[2]) ? m[1] : null; }
-// token do ENTREGADOR (transmite): LSE1|id|nome|cor|chk
-function _chkPayload(s){ let n=0; const x='LSx'+s; for(let i=0;i<x.length;i++) n=(n*31+x.charCodeAt(i))%100000; return n; }
-function dadosDeTokenEnt(tok){
-  const raw=_ub64u(tok); const m=/^(LSE1\|.+)\|(\d+)$/.exec(raw);
-  if(!m || _chkPayload(m[1])!==Number(m[2])) return null;
-  const p=m[1].split('|');               // [LSE1, id, nome, cor]
-  return p[1] ? { id:p[1], nome:p[2]||'', cor:p[3]||'#d4b45a' } : null;
+var WA_ICON='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.68-6.16A11.87 11.87 0 010 11.92C0 5.34 5.35 0 11.93 0a11.86 11.86 0 018.42 3.5 11.82 11.82 0 013.49 8.42c0 6.58-5.35 11.93-11.93 11.93a11.9 11.9 0 01-5.7-1.45L.06 24zM6.6 20.13l.36.21a9.9 9.9 0 005.04 1.38 9.92 9.92 0 009.91-9.9 9.85 9.85 0 00-2.9-7.01 9.84 9.84 0 00-7-2.9 9.92 9.92 0 00-9.92 9.9c0 1.9.54 3.75 1.56 5.34l.24.38-1 3.65 3.71-.95zm11.1-5.3c-.15-.25-.55-.4-1.15-.7-.6-.3-3.5-1.73-4.04-1.92-.54-.2-.94-.3-1.33.3-.4.6-1.53 1.92-1.87 2.31-.35.4-.69.45-1.28.15-.6-.3-2.5-.92-4.76-2.94-1.76-1.57-2.95-3.51-3.29-4.1-.35-.6-.04-.92.26-1.22.27-.27.6-.7.9-1.05.3-.35.4-.6.6-1 .2-.4.1-.74-.05-1.04-.15-.3-1.33-3.2-1.82-4.38-.48-1.15-.97-1-1.33-1.01l-1.14-.02c-.4 0-1.04.15-1.58.74-.54.6-2.07 2.02-2.07 4.93s2.12 5.72 2.42 6.12c.3.4 4.17 6.37 10.1 8.93 1.41.6 2.51.96 3.37 1.23 1.42.45 2.7.39 3.72.24 1.14-.17 3.5-1.43 3.99-2.81.49-1.38.49-2.56.34-2.81z"/></svg>';
+
+var ENTREGADORES=[
+  {id:'gustavo', nome:'Gustavo',     cor:'#d4b45a', tel:'5562999990001'},
+  {id:'joao',    nome:'João Vitor',  cor:'#6fb0a6', tel:'5562999990002'},
+  {id:'ewald',   nome:'Ewald',       cor:'#9bbcdc', tel:'5562999990003'}
+];
+var ENT={}; ENTREGADORES.forEach(function(e){ ENT[e.id]=e; });
+
+function lojaCoords(){ return {lat:-16.6869, lng:-49.2648}; }
+function $(id){ return document.getElementById(id); }
+function esc(s){ return (''+(s==null?'':s)).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+function fmtAge(ts){
+  var s=Math.max(0,Math.round((Date.now()-ts)/1000));
+  if(s<20) return 'agora mesmo';
+  if(s<60) return 'há '+s+'s';
+  var m=Math.round(s/60);
+  if(m<60) return 'há '+m+' min';
+  var h=Math.floor(m/60), mm=m%60; return 'há '+h+'h'+(mm?(' '+mm+'min'):'');
 }
+function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dataDe(e){ return e.dia; }
+function hrTxt(e){ return e.horarioHora ? ('até '+e.horarioHora) : ''; }
+function telEnt(id){ var e=ENT[id]; return e&&e.tel?e.tel:''; }
+function _hhmm(h,m){ var d=new Date(); d.setHours(h,m||0,0,0); return d.getTime(); }
+var HOJE=todayKey();
 
-/* ===== helpers de mapa/tempo ===== */
-function coordFrom(url){
-  if(!url) return null;
-  let s; try{ s=decodeURIComponent(url); }catch(e){ s=url; }
-  const pats=[/[?&]q=(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/,/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]ll=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]destination=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/,/(-?\d{1,2}\.\d{4,}),\s*(-?\d{1,3}\.\d{4,})/];
-  for(const p of pats){ const m=s.match(p); if(m) return {lat:parseFloat(m[1]), lng:parseFloat(m[2])}; }
+/* entregas fictícias de HOJE */
+var entregas=[
+  {id:'g1',entregador:'gustavo',status:'em_rota', dia:HOJE,ordemManual:1,cliente:'Bruno Carvalho',bairro:'Setor Bueno',  coord:{lat:-16.7030,lng:-49.2550}},
+  {id:'g2',entregador:'gustavo',status:'em_rota', dia:HOJE,ordemManual:2,cliente:'Helena Dias',   bairro:'Setor Marista', coord:{lat:-16.7110,lng:-49.2680}, horarioTipo:'ate',horarioHora:'15:00'},
+  {id:'g3',entregador:'gustavo',status:'entregue',dia:HOJE,entregueEm:_hhmm(9,42), cliente:'Carla Mendes',bairro:'Setor Oeste', coord:{lat:-16.6950,lng:-49.2760}},
+  {id:'g4',entregador:'gustavo',status:'entregue',dia:HOJE,entregueEm:_hhmm(10,15),cliente:'Diego Rocha', bairro:'Jardim Goiás',coord:{lat:-16.7000,lng:-49.2450}},
+  {id:'j1',entregador:'joao',status:'em_rota',  dia:HOJE,ordemManual:1,cliente:'Fábio Souza',bairro:'Setor Sul', coord:{lat:-16.7150,lng:-49.2600}},
+  {id:'j2',entregador:'joao',status:'entregue', dia:HOJE,entregueEm:_hhmm(8,55), cliente:'Eva Lima', bairro:'Setor Central', coord:{lat:-16.6900,lng:-49.2555}},
+  {id:'j3',entregador:'joao',status:'nao_entregue',dia:HOJE,desfechoEm:_hhmm(11,2),cliente:'Igor Melo',bairro:'Setor Universitário',motivo:'ninguém em casa',coord:{lat:-16.7080,lng:-49.2400}},
+  {id:'e1',entregador:'ewald',status:'entregue',dia:HOJE,entregueEm:_hhmm(7,30),cliente:'Lucas Pires',bairro:'Setor Pedro Ludovico',coord:{lat:-16.7000,lng:-49.2650}},
+  {id:'e2',entregador:'ewald',status:'cancelado',dia:HOJE,desfechoEm:_hhmm(8,5),cliente:'Marina Reis',bairro:'Setor Sudoeste',motivo:'desistiu da compra',coord:{lat:-16.7050,lng:-49.2900}}
+];
+
+/* ===== rastreio ao vivo (SIMULADO) ===== */
+var liveEnt={}, _rastTimer=null;
+function _alvo(id){
+  var r=entregas.filter(function(e){ return e.entregador===id && e.status==='em_rota'; })
+                .sort(function(a,b){ return (a.ordemManual||9)-(b.ordemManual||9); });
+  return r.length?r[0].coord:lojaCoords();
+}
+function assinarRastreio(){
+  if(_rastTimer) return;
+  var lj=lojaCoords();
+  liveEnt['gustavo']={lat:lj.lat-0.004, lng:lj.lng-0.004, ativo:true,  atualizadoEm:Date.now()};
+  liveEnt['joao']   ={lat:lj.lat+0.003, lng:lj.lng+0.003, ativo:true,  atualizadoEm:Date.now()};
+  liveEnt['ewald']  ={lat:lj.lat,       lng:lj.lng,       ativo:false, atualizadoEm:_hhmm(8,12)}; // sem sinal: parou de transmitir 08:12
+  _passo();
+  _rastTimer=setInterval(_passo, 2500);
+}
+function _passo(){
+  ['gustavo','joao'].forEach(function(id){
+    var r=liveEnt[id]; if(!r) return;
+    var a=_alvo(id);
+    r.lat += (a.lat-r.lat)*0.16 + (Math.random()-0.5)*0.0006;
+    r.lng += (a.lng-r.lng)*0.16 + (Math.random()-0.5)*0.0006;
+    r.ativo=true; r.atualizadoEm=Date.now();
+  });
+  renderMapLive();
+  // atualiza só os horários "há X" sem reconstruir a lista inteira
+  document.querySelectorAll('[data-when]').forEach(function(el){
+    var id=el.getAttribute('data-when'); el.textContent=statusInfo(id).txt;
+  });
+}
+function posicaoViva(id){
+  var r=liveEnt[id];
+  if(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0) < 150000)) return {lat:r.lat, lng:r.lng};
   return null;
 }
-function coordOf(e){ return e.coord||coordFrom(e.link); }
-function haversine(a,b){ const R=6371, tr=x=>x*Math.PI/180; const dLat=tr(b.lat-a.lat), dLng=tr(b.lng-a.lng); const s=Math.sin(dLat/2)**2 + Math.cos(tr(a.lat))*Math.cos(tr(b.lat))*Math.sin(dLng/2)**2; return 2*R*Math.asin(Math.sqrt(s)); }
-function legMin(a,b){ return (haversine(a,b)*1.4)/22*60; }  /* mesma estimativa do painel */
-function fmtDur(min){ if(min<1) return 'agora'; if(min<60) return min+' min'; const h=Math.floor(min/60), m=min%60; return h+'h'+(m?String(m).padStart(2,'0'):'00'); }
-function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+/* texto de status com a ÚLTIMA transmissão (ao vivo e sem sinal) */
+function statusInfo(id){
+  var r=liveEnt[id];
+  if(!r || r.atualizadoEm==null) return {vivo:false, txt:'sem registro hoje'};
+  if(posicaoViva(id)) return {vivo:true, txt:'transmitindo · atualizado '+fmtAge(r.atualizadoEm)};
+  return {vivo:false, txt:'última posição às '+fmtClock(r.atualizadoEm)+' ('+fmtAge(r.atualizadoEm)+')'};
+}
 
-/* ===== mapa + marcadores ===== */
-let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trackUnsubEnt=null, _trackUnsubDoc=null, _trackInt=null;
-let _trackRota=[], _meuId=null, _trackRotaUnsub=null;   // rota do entregador (p/ saber se a minha entrega é a próxima)
-const _homeIcon = ()=>L.divIcon({html:'<div class="track-home-badge"><span>🏠</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
-const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🏍️</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
-/* ===== marcadores que DESLIZAM (em vez de redesenhar tudo a cada posição) ===== */
-let _motos={}, _cena=null, _staticSig=null, _fitPend=false;
-function _slideTo(M,to){
-  const from=M.marker.getLatLng();
-  if(Math.abs(from.lat-to[0])<1e-7 && Math.abs(from.lng-to[1])<1e-7) return;
-  if(M.anim) cancelAnimationFrame(M.anim);
-  const t0=performance.now(), dur=1400, fl=from.lat, fg=from.lng;
-  (function step(now){
-    let k=Math.min(1,(now-t0)/dur); k=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;   // ease in-out
-    M.marker.setLatLng([fl+(to[0]-fl)*k, fg+(to[1]-fg)*k]);
-    if(k<1) M.anim=requestAnimationFrame(step);
-  })(performance.now());
+/* ===== dados do dia por entregador ===== */
+function _entLiveDados(id){
+  var minhas=entregas.filter(function(e){ return e.entregador===id && dataDe(e)===HOJE; });
+  var rota=minhas.filter(function(e){ return e.status==='em_rota'; })
+    .sort(function(a,b){ return ((a.ordemManual==null?9999:a.ordemManual)-(b.ordemManual==null?9999:b.ordemManual)) || ((a.roteadoEm||0)-(b.roteadoEm||0)); });
+  // FINALIZADAS = entregues + não concluídas (item 5), em ordem de horário
+  var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0; })
+    .map(function(e){ return {e:e, ok:e.status==='entregue', when:(e.entregueEm||e.desfechoEm||0)}; })
+    .sort(function(a,b){ return a.when-b.when; });
+  return {rota:rota, fin:fin};
 }
-function motoSet(chave,lat,lng,icon,sig){              // cria a moto ou desliza pra nova posição
-  let M=_motos[chave];
-  if(!M){ _motos[chave]={marker:L.marker([lat,lng],{icon:icon,zIndexOffset:1000}).addTo(_trackMap),anim:null,sig:sig}; return; }
-  _slideTo(M,[lat,lng]);
-  if(sig!==undefined && M.sig!==sig){ M.sig=sig; M.marker.setIcon(icon); }   // troca o ícone só se mudou (ex.: ficou "sem sinal")
+
+/* ===== mapa ===== */
+var mapLive=null, mapLiveLayer=null, _mapLiveInit=false;
+var _focoId=null, _focoKey=null, _focoLine=null;
+
+function ensureMapLive(){
+  if(_mapLiveInit){ if(mapLive) setTimeout(function(){ mapLive.invalidateSize(); },50); return; }
+  var loja=lojaCoords();
+  mapLive=L.map('map-live',{zoomControl:true}).setView([loja.lat,loja.lng],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(mapLive);
+  mapLiveLayer=L.layerGroup().addTo(mapLive);
+  _mapLiveInit=true;
+  setTimeout(function(){ mapLive.invalidateSize(); },60);
 }
-function motosManter(ativos){                          // remove as motos que saíram de cena
-  Object.keys(_motos).forEach(k=>{ if(ativos.indexOf(k)<0){ if(_motos[k].anim) cancelAnimationFrame(_motos[k].anim); _trackMap.removeLayer(_motos[k].marker); delete _motos[k]; } });
-}
-function cenaSet(cena){ if(_cena!==cena){ _cena=cena; _staticSig=null; _fitPend=true; if(_trackLayer) _trackLayer.clearLayers(); motosManter([]); } }  // trocou de tela → reseta
-function estatico(sig,draw){ if(sig!==_staticSig){ _staticSig=sig; _fitPend=true; if(_trackLayer) _trackLayer.clearLayers(); draw(); } }   // redesenha o estático só quando muda
-function enquadrar(pts){ if(!_fitPend||!pts.length) return; _fitPend=false; if(pts.length===1) _trackMap.setView(pts[0],15); else _trackMap.fitBounds(pts,{padding:[55,55],maxZoom:16}); }
-function trackEnsureMap(){
-  if(typeof L==='undefined' || _trackMap) return;
-  _trackMap=L.map('track-map',{zoomControl:true,attributionControl:false}).setView([-16.6869,-49.2648],13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(_trackMap);
-  _trackLayer=L.layerGroup().addTo(_trackMap);
-  setTimeout(()=>_trackMap.invalidateSize(),120);
-}
-/* ===== rota real pelas ruas (OSRM público; cai na reta se falhar) ===== */
-const _rotaCache={}, _durCache={};   // linhas E durações REAIS de rua (mesma resposta do OSRM)
-function _rotaKey(pts){ return pts.map(p=>p.lat.toFixed(3)+','+p.lng.toFixed(3)).join(';'); }
-async function rotaRuas(pts){
-  if(!pts || pts.length<2) return null;
-  const key=_rotaKey(pts);
-  if(_rotaCache[key]) return _rotaCache[key];
-  const coords=pts.map(p=>p.lng+','+p.lat).join(';');
-  const url='https://router.project-osrm.org/route/v1/driving/'+coords+'?overview=full&geometries=geojson';
+function _motoDiv(cor){ return L.divIcon({className:'lsdi',iconSize:[34,34],iconAnchor:[17,17],html:'<div class="ls-moto" style="background:'+cor+'">🛵</div>'}); }
+function _numDiv(n){ return L.divIcon({className:'lsdi',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="ls-num">'+n+'</div>'}); }
+function _doneDiv(){ return L.divIcon({className:'lsdi',iconSize:[24,24],iconAnchor:[12,12],html:'<div class="ls-done">✓</div>'}); }
+function _lojaDiv(){ return L.divIcon({className:'lsdi',iconSize:[26,26],iconAnchor:[13,13],html:'<div style="width:22px;height:22px;border-radius:50%;background:#eef0e3;border:3px solid #14210d;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>'}); }
+
+/* roteamento por rua (OSRM) — igual ao rastreio do cliente; cai p/ linha reta se falhar */
+function rotaRuas(wps){
   try{
-    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(),8000);
-    const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(to);
-    if(!r.ok) return null;
-    const j=await r.json();
-    const rt=j&&j.routes&&j.routes[0];
-    const g=rt&&rt.geometry&&rt.geometry.coordinates;
-    if(!g||!g.length) return null;
-    const line=g.map(c=>[c[1],c[0]]);   // [lng,lat] -> [lat,lng]
-    _rotaCache[key]=line;
-    if(rt.legs && rt.legs.length) _durCache[key]=rt.legs.map(l=>l.duration/60);   // minutos REAIS por trecho — vem de graça na mesma resposta
-    return line;
-  }catch(_){ return null; }
-}
-/* duração REAL de rua (minutos por trecho) já obtida pelo rotaRuas — sem nenhuma chamada extra ao OSRM.
-   etaRealMin: tempo real entre 2 pontos quando já temos a rota; senão cai na estimativa antiga (legMin). */
-function rotaDurMin(pts){ if(!pts||pts.length<2) return null; const d=_durCache[_rotaKey(pts)]; return (d&&d.length)?d:null; }
-function etaRealMin(a,b){ const d=rotaDurMin([a,b]); return (d&&d[0]!=null)?d[0]:legMin(a,b); }
-/* fallback p/ DEMO: caminho com quinas (estilo quarteirão) quando a rota real não responde */
-function _densify(line, perSeg){
-  const out=[];
-  for(let i=0;i<line.length-1;i++){ const a=line[i], b=line[i+1]; for(let t=0;t<perSeg;t++) out.push([a[0]+(b[0]-a[0])*t/perSeg, a[1]+(b[1]-a[1])*t/perSeg]); }
-  out.push(line[line.length-1]); return out;
-}
-function _quinas(a,b,blocos){
-  const out=[[a.lat,a.lng]]; let lat=a.lat,lng=a.lng;
-  const dLat=(b.lat-a.lat)/blocos, dLng=(b.lng-a.lng)/blocos;
-  for(let k=0;k<blocos;k++){
-    if(k%2===0){ lng+=dLng; out.push([lat,lng]); lat+=dLat; out.push([lat,lng]); }
-    else { lat+=dLat; out.push([lat,lng]); lng+=dLng; out.push([lat,lng]); }
-  }
-  out.push([b.lat,b.lng]); return out;
-}
-function rotaFalsaRuas(pts){
-  let corners=[];
-  for(let i=0;i<pts.length-1;i++){ const seg=_quinas(pts[i],pts[i+1],4); if(i>0) seg.shift(); corners=corners.concat(seg); }
-  return _densify(corners, 7);
-}
-let _cliLine=null, _cliDestK=null, _cliReq=null, _cliFeita=null, _cliResta=null;
-function _idxProx(line, pt){ let bi=0,bd=Infinity; for(let i=0;i<line.length;i++){ const dx=line[i][0]-pt[0], dy=line[i][1]-pt[1], d=dx*dx+dy*dy; if(d<bd){bd=d;bi=i;} } return bi; }
-function _slideAoLongo(M, line, fromIdx, toIdx, dur){     // desliza SEGUINDO os pontos da rua
-  const pts = fromIdx<=toIdx ? line.slice(fromIdx, toIdx+1) : line.slice(toIdx, fromIdx+1).reverse();
-  if(pts.length<2){ _slideTo(M, line[toIdx]); return; }
-  if(M.anim) cancelAnimationFrame(M.anim);
-  const t0=performance.now();
-  (function step(now){
-    let k=Math.min(1,(now-t0)/dur); const kk=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
-    const f=kk*(pts.length-1), idx=Math.floor(f), frac=f-idx;
-    const a=pts[idx], b=pts[Math.min(idx+1,pts.length-1)];
-    M.marker.setLatLng([a[0]+(b[0]-a[0])*frac, a[1]+(b[1]-a[1])*frac]);
-    if(k<1) M.anim=requestAnimationFrame(step);
-  })(performance.now());
-}
-function _motoCli(lat,lng,line,j){
-  let M=_motos['cli'];
-  if(!M){ _motos['cli']={marker:L.marker([lat,lng],{icon:_motoIcon(),zIndexOffset:1000}).addTo(_trackMap),anim:null,sig:null,idx:(j||0)}; return; }
-  const from=(typeof M.idx==='number')?M.idx:0;
-  if(line && line.length>1 && j!==from){ _slideAoLongo(M, line, from, j, 1400); M.idx=j; }
-  else { _slideTo(M,[lat,lng]); if(line) M.idx=j; }
-}
-function motoSegueLinha(chave, lat, lng, line){      // moto desliza SEGUINDO a rua (frota-foco e rota do entregador)
-  let M=_motos[chave];
-  if(!M){ _motos[chave]={marker:L.marker([lat,lng],{icon:_motoIcon(),zIndexOffset:1000}).addTo(_trackMap),anim:null,sig:null,idx:0}; return; }
-  const from=(typeof M.idx==='number')?M.idx:0;
-  if(line && line.length>1){ const j=_idxProx(line,[lat,lng]); if(j!==from){ _slideAoLongo(M,line,from,j,1400); M.idx=j; } else { M.marker.setLatLng(line[j]); } }
-  else { _slideTo(M,[lat,lng]); }
-}
-function _cliPolys(){
-  if(!_cliFeita) _cliFeita=L.polyline([],{color:'#d4b45a',weight:5,opacity:.22}).addTo(_trackMap);   // já percorrido
-  if(!_cliResta) _cliResta=L.polyline([],{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackMap);   // o que falta
-}
-function desenharTrack(dest, ent){
-  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  cenaSet('cli'); _cliPolys();
-  const pts=[];
-  const destK = dest? dest.lat.toFixed(5)+','+dest.lng.toFixed(5):'';
-  estatico('home:'+destK, ()=>{ if(dest) L.marker([dest.lat,dest.lng],{icon:_homeIcon()}).addTo(_trackLayer); });  // casa = estático
-  if(dest) pts.push([dest.lat,dest.lng]);
-  if(dest && ent){
-    const entPt=[ent.lat,ent.lng];
-    const linhaOk = _cliLine && _cliDestK===destK && _cliLine.length>1;
-    let desviou=true;
-    if(linhaOk){ const j0=_idxProx(_cliLine, entPt); const dx=_cliLine[j0][0]-entPt[0], dy=_cliLine[j0][1]-entPt[1]; desviou=(dx*dx+dy*dy)>(0.0012*0.0012); }  // saiu ~130m da rota?
-    const reqK = destK+'|'+ent.lat.toFixed(3)+','+ent.lng.toFixed(3);
-    if((!linhaOk || desviou) && _cliReq!==reqK){       // recalcula a rota só quando não há / mudou destino / desviou (economiza chamadas)
-      _cliReq=reqK;
-      rotaRuas([ent,dest]).then(line=>{ if(line && line.length>1){ _cliLine=line; _cliDestK=destK; if(_motos['cli']) _motos['cli'].idx=0; desenharTrack(dest,ent); } });
-    }
-    if(linhaOk){
-      const j=_idxProx(_cliLine, entPt);
-      _cliFeita.setLatLngs(_cliLine.slice(0,j+1));
-      _cliResta.setLatLngs(_cliLine.slice(j)); _cliResta.setStyle({dashArray:null,opacity:.85,weight:4});
-      _motoCli(ent.lat,ent.lng,_cliLine,j);            // moto desliza PELA rua
-      pts.push(_cliLine[j]);
-    } else {
-      _cliFeita.setLatLngs([]);
-      _cliResta.setLatLngs([[ent.lat,ent.lng],[dest.lat,dest.lng]]); _cliResta.setStyle({dashArray:'6,8',opacity:.5,weight:3});
-      _motoCli(ent.lat,ent.lng,null,0);
-      pts.push([ent.lat,ent.lng]);
-    }
-    motosManter(['cli']);
-  } else {
-    if(_cliFeita) _cliFeita.setLatLngs([]); if(_cliResta) _cliResta.setLatLngs([]);
-    motosManter([]);
-  }
-  if(dest && ent){ try{ const b=_trackMap.getBounds(); if(!b.contains([ent.lat,ent.lng]) || !b.contains([dest.lat,dest.lng])) _fitPend=true; }catch(_){} }  // reenquadra p/ mostrar entregador + cliente quando algum sai da tela
-  enquadrar(pts);
-}
-function pararTrackEnt(){ if(_trackUnsubEnt){ _trackUnsubEnt(); _trackUnsubEnt=null; } }
-function pararTrackTudo(){   // entrega finalizada → para de ler TUDO (não consome mais nada)
-  pararTrackEnt();
-  if(_trackUnsubDoc){ _trackUnsubDoc(); _trackUnsubDoc=null; }
-  if(_trackRotaUnsub){ _trackRotaUnsub(); _trackRotaUnsub=null; }
-  if(_trackInt){ clearInterval(_trackInt); _trackInt=null; }
+    var url='https://router.project-osrm.org/route/v1/driving/'+wps.map(function(p){return p.lng+','+p.lat;}).join(';')+'?overview=full&geometries=geojson';
+    return fetch(url).then(function(r){return r.json();}).then(function(j){
+      if(j && j.routes && j.routes[0]) return j.routes[0].geometry.coordinates.map(function(c){return [c[1],c[0]];});
+      return null;
+    }).catch(function(){ return null; });
+  }catch(_){ return Promise.resolve(null); }
 }
 
-// ===== estágios do cliente =====
-function _setSteps(etapa){   // 'aguardando' | 'pego' | 'a_caminho' | 'entregue' | 'encerrada'
-  const box=$('track-steps'); if(!box) return;
-  if(etapa==='encerrada'){ box.innerHTML=''; return; }
-  const ordem=['aguardando','pego','a_caminho','entregue'];
-  const labels={aguardando:'Pedido recebido — aguardando rota', pego:'Entregador coletou seu pedido', a_caminho:'A caminho de você', entregue:'Pedido entregue'};
-  const at=ordem.indexOf(etapa);
-  box.innerHTML=ordem.map((k,i)=>{
-    const cls = i<at ? 'done' : (i===at ? 'on' : '');
-    const ic  = i<at ? '✓' : '';
-    return `<div class="stp ${cls}"><span class="bul">${ic}</span><span class="tx">${labels[k]}</span></div>`;
+function renderMapLive(){
+  if(!mapLive || !mapLiveLayer) return;
+  if(_focoId) return desenharFoco();
+  return desenharTodos();
+}
+function desenharTodos(){
+  mapLiveLayer.clearLayers();
+  var bounds=[], loja=lojaCoords();
+  L.marker([loja.lat,loja.lng],{icon:_lojaDiv()}).addTo(mapLiveLayer).bindPopup('🏪 <b>Loretto Scarpa</b> (loja)');
+  bounds.push([loja.lat,loja.lng]);
+  var nVivo=0;
+  ENTREGADORES.forEach(function(ent){
+    var p=posicaoViva(ent.id); if(!p) return;
+    nVivo++;
+    var d=_entLiveDados(ent.id);
+    L.marker([p.lat,p.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer)
+      .bindPopup('<b>'+esc(ent.nome)+'</b><br>🛵 '+d.rota.length+' em rota');
+    bounds.push([p.lat,p.lng]);
+  });
+  if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[42,42],maxZoom:14});
+  var note=$('ent-live-mapnote');
+  if(note) note.textContent = nVivo ? ('🟢 '+nVivo+' '+(nVivo===1?'entregador transmitindo':'entregadores transmitindo')+' agora') : 'Nenhum entregador transmitindo agora.';
+}
+function desenharFoco(){
+  mapLiveLayer.clearLayers();
+  var ent=ENT[_focoId]; if(!ent) return;
+  var d=_entLiveDados(_focoId);
+  var pos=posicaoViva(_focoId);
+  var loja=lojaCoords();
+  var bounds=[[loja.lat,loja.lng]];
+  L.marker([loja.lat,loja.lng],{icon:_lojaDiv()}).addTo(mapLiveLayer).bindPopup('🏪 Loja');
+
+  // entregas já feitas hoje (✓)
+  d.fin.forEach(function(f){ if(f.ok && f.e.coord){ L.marker([f.e.coord.lat,f.e.coord.lng],{icon:_doneDiv()}).addTo(mapLiveLayer); bounds.push([f.e.coord.lat,f.e.coord.lng]); } });
+
+  // paradas que FALTAM (numeradas)
+  d.rota.forEach(function(e,i){ if(e.coord){ L.marker([e.coord.lat,e.coord.lng],{icon:_numDiv(i+1)}).addTo(mapLiveLayer).bindPopup((i+1)+'. <b>'+esc(e.cliente)+'</b>'); bounds.push([e.coord.lat,e.coord.lng]); } });
+
+  // waypoints da rota = posição atual + paradas restantes
+  var wps=[]; if(pos) wps.push(pos); d.rota.forEach(function(e){ if(e.coord) wps.push(e.coord); });
+  var stopsKey=d.rota.map(function(e){ return e.coord?e.coord.lat.toFixed(4)+','+e.coord.lng.toFixed(4):''; }).join(';');
+  if(_focoKey!==stopsKey){ _focoKey=stopsKey; _focoLine=null;
+    if(wps.length>=2) rotaRuas(wps).then(function(line){ if(line && _focoId===ent.id && _focoKey===stopsKey){ _focoLine=line; desenharFoco(); } });
+  }
+  if(wps.length>=2){
+    var pts = _focoLine ? _focoLine : wps.map(function(p){ return [p.lat,p.lng]; });
+    L.polyline(pts,{color:ent.cor, weight:4, opacity:.9, dashArray:_focoLine?null:'6,8'}).addTo(mapLiveLayer);
+  }
+  if(pos){ L.marker([pos.lat,pos.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer); bounds.push([pos.lat,pos.lng]); }
+
+  if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[46,46],maxZoom:15});
+  var st=statusInfo(_focoId);
+  var note=$('ent-live-mapnote');
+  if(note) note.textContent = (st.vivo?'🟢 ':'⚪ ')+esc(ent.nome)+' · '+st.txt+' · '+(d.rota.length?(d.rota.length+' parada'+(d.rota.length>1?'s':'')+' restante'+(d.rota.length>1?'s':'')):'rota concluída');
+}
+
+/* ===== abre / fecha / foco ===== */
+function abrirEntregadores(){ assinarRastreio(); ensureMapLive(); renderEntLiveList(); setTimeout(function(){ if(mapLive) mapLive.invalidateSize(); renderMapLive(); }, 80); }
+function selecionarFrota(id){ _focoId=id; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 '+ENT[id].nome; $('ent-live-sec').textContent='Rota em andamento'; renderEntLiveList(); renderMapLive(); var b=$('ent-live-body'); if(b) b.scrollTop=0; }
+function voltarFrota(){ _focoId=null; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 Equipe ao vivo'; $('ent-live-sec').textContent='Toque em um entregador para ver a rota dele'; renderEntLiveList(); renderMapLive(); }
+
+/* ===== lista ===== */
+function _rowsRota(d){
+  return d.rota.length
+    ? d.rota.map(function(e,i){ return '<div class="elv-row"><span class="num">'+(i+1)+'</span><span class="info"><span class="cli">'+esc(e.cliente)+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'sem bairro')+((e.horarioTipo&&e.horarioHora)?' · ⏰ '+esc(hrTxt(e)):'')+'</span></span></div>'; }).join('')
+    : '<div class="elv-empty">Nada em rota agora.</div>';
+}
+function _rowsFin(d){
+  if(!d.fin.length) return '<div class="elv-empty">Nenhuma finalizada hoje ainda.</div>';
+  return d.fin.map(function(f){
+    var e=f.e, hr=f.when?fmtClock(f.when):'—';
+    if(f.ok){
+      return '<div class="elv-row"><span class="hr">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente)+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag ok">✓ entregue</span></span></div>';
+    }
+    var motivo = e.status==='cancelado' ? 'não comprou' : 'não entregue';
+    if(e.motivo) motivo += ' · '+e.motivo;
+    return '<div class="elv-row fail"><span class="hr fail">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente)+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag fail">✕ finalizada · não deu certo — '+esc(motivo)+'</span></span></div>';
   }).join('');
 }
-function _waNumRastreio(raw){
-  let d=(raw||'').replace(/\D/g,''); if(!d) return '';
-  if(d.length>11 && d.startsWith('55')) d=d.slice(2);
-  d=d.replace(/^0+/,'');
-  if(d.length===8||d.length===9) d='62'+d;
-  if(d.length===10) d=d.slice(0,2)+'9'+d.slice(2);
-  return d.length===11 ? '55'+d : '';
+function focoCardHTML(id){
+  var ent=ENT[id], d=_entLiveDados(id), st=statusInfo(id);
+  var prox=d.rota[0];
+  var caminho = prox ? ('🛵 A caminho de <b>'+esc(prox.cliente.split(' ')[0])+'</b>'+(prox.bairro?' · '+esc(prox.bairro):'')) : '✓ Rota concluída por hoje';
+  var tel=telEnt(id);
+  return '<button class="elv-back" onclick="voltarFrota()">‹ Ver todos</button>'
+    +'<div class="elv-card foco">'
+      +'<div class="elv-head" style="cursor:default">'
+        +'<span class="elv-dot" style="background:'+ent.cor+'"></span>'
+        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span><span class="elv-when">'+st.txt+'</span></span>'
+        +'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>'
+      +'</div>'
+      +'<div class="elv-counts">'
+        +'<span class="elv-pill rota">🛵 em rota: <b>'+d.rota.length+'</b></span>'
+        +'<span class="elv-pill ok">✓ finalizadas hoje: <b>'+d.fin.length+'</b></span>'
+      +'</div>'
+      +'<div class="elv-body">'
+        +'<div class="elv-caminho">'+caminho+'</div>'
+        +'<div class="elv-grp">🛵 Em rota agora — paradas que faltam ('+d.rota.length+')</div>'+_rowsRota(d)
+        +'<div class="elv-grp">✓ Finalizadas hoje — na ordem que ele fechou ('+d.fin.length+')</div>'+_rowsFin(d)
+        +(tel?'<div class="elv-acts"><a class="elv-wa" href="https://wa.me/'+tel+'" target="_blank" rel="noopener">'+WA_ICON+' Falar com '+esc(ent.nome.split(' ')[0])+'</a></div>':'')
+      +'</div>'
+    +'</div>';
 }
-const _WA_SVG='<svg viewBox="0 0 32 32" fill="currentColor"><path d="M16.04 3C9.42 3 4.04 8.38 4.04 15c0 2.12.55 4.13 1.6 5.93L4 29l8.28-1.6A11.93 11.93 0 0 0 16.04 27c6.62 0 12-5.38 12-12S22.66 3 16.04 3zm0 21.6c-1.86 0-3.68-.5-5.27-1.45l-.38-.22-4.91.95.98-4.79-.25-.39A9.56 9.56 0 0 1 6.44 15c0-5.3 4.3-9.6 9.6-9.6s9.6 4.3 9.6 9.6-4.3 9.6-9.6 9.6zm5.27-7.18c-.29-.14-1.71-.84-1.97-.94-.26-.1-.46-.14-.65.14-.19.29-.74.94-.91 1.13-.17.19-.34.21-.62.07-.29-.14-1.22-.45-2.32-1.43-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.59.13-.13.29-.34.43-.51.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.14-.65-1.56-.89-2.14-.23-.56-.47-.48-.65-.49l-.55-.01c-.19 0-.5.07-.76.36s-1 .98-1 2.38 1.02 2.76 1.17 2.95c.14.19 2.01 3.07 4.87 4.3.68.29 1.21.47 1.62.6.68.22 1.3.19 1.79.12.55-.08 1.71-.7 1.95-1.37.24-.67.24-1.25.17-1.37-.07-.12-.26-.19-.55-.33z"/></svg>';
-let _courierFor=null;
-function _hideCourier(){ const c=$('track-courier'); if(c) c.classList.remove('on'); const lv=$('track-live'); if(lv) lv.classList.remove('on'); }
-function renderCourier(e, nome){
-  const c=$('track-courier'); if(!c) return;
-  const cfg=ENT_BY_ID[e.entregador]||{};
-  const nm = nome || (cfg.nome?String(cfg.nome).split(' ')[0]:'Entregador');
-  if(_courierFor!==e.entregador){
-    _courierFor=e.entregador;
-    const badge=$('track-cbadge'); if(badge){ badge.textContent=(nm[0]||'•').toUpperCase(); badge.style.setProperty('--c', cfg.cor||'#d4b45a'); }
-    const cn=$('track-cnome'); if(cn) cn.textContent=nm;
-    const wa=$('track-wa'); if(wa) wa.style.display = _waNumRastreio(cfg.fone||'') ? '' : 'none';
-  }
-  c.classList.add('on');
-}
-function fecharFalar(){ const el=$('falar-bg'); if(el) el.remove(); }
-function abrirFalar(ev){
-  if(ev) ev.preventDefault();
-  const e=_ultEntrega; if(!e) return;
-  const cfg=ENT_BY_ID[e.entregador]||{}; const num=_waNumRastreio(cfg.fone||''); if(!num) return;
-  const nm = cfg.nome?String(cfg.nome).split(' ')[0]:'o entregador';
-  const cli=e.cliente?String(e.cliente).trim().split(/\s+/)[0]:'';
-  const msg = cli ? `Olá! Aqui é ${cli}, cliente da Loretto Scarpa. Estou acompanhando a minha entrega e gostaria de falar com você. 🙂`
-                  : `Olá! Sou cliente da Loretto Scarpa e estou acompanhando a minha entrega. Gostaria de falar com você. 🙂`;
-  const wa=`https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-  fecharFalar();
-  const bg=document.createElement('div'); bg.id='falar-bg';
-  bg.innerHTML=`<div class="falar-modal">
-    <div class="falar-titulo">Falar com ${nm}</div>
-    <div class="falar-sub">Como você quer falar?</div>
-    <a class="falar-opt wa" href="${wa}" target="_blank" onclick="fecharFalar()">${_WA_SVG} WhatsApp</a>
-    <a class="falar-opt tel" href="tel:+${num}" onclick="fecharFalar()">📞 Ligar</a>
-    <button class="falar-cancel" onclick="fecharFalar()">Cancelar</button>
-  </div>`;
-  bg.addEventListener('click', ev2=>{ if(ev2.target===bg) fecharFalar(); });
-  document.body.appendChild(bg);
-}
-function _etaHero(num,unit,whenTs){ const eta=$('track-eta'); if(!eta) return; eta.classList.add('hero'); eta.innerHTML=`<span class="num">${num}</span><span class="unit">${unit}</span><span class="when">chegada prevista<b>~${fmtClock(whenTs)}</b></span>`; }
-function _etaPlain(txt){ const eta=$('track-eta'); if(!eta) return; eta.classList.remove('hero'); eta.textContent=txt||''; }
-function _fila(antes, prevTs){ const f=$('track-fila'); if(!f) return; if(antes>0){ f.classList.add('on'); f.innerHTML=`<span class="fnum">${antes}</span><span class="ftx">${antes===1?'entrega':'entregas'} antes da sua na rota${prevTs?`<br><b>previsão ~${fmtClock(prevTs)}</b>`:''}</span>`; } else { f.classList.remove('on'); f.innerHTML=''; } }
-function _hideFila(){ const f=$('track-fila'); if(f){ f.classList.remove('on'); f.innerHTML=''; } }
-function _posicaoNaRota(meuId){           // usa _trackRota (já só em_rota, ordenada). atual = sou o próximo
-  const arr=_trackRota||[];
-  const idx=arr.findIndex(s=>String(s.id)===String(meuId));
-  if(idx<0) return {pos:1,total:arr.length||1,atual:true};
-  return {pos:idx+1, total:arr.length, atual: idx===0};
-}
-function _previsaoChegada(viva, meuId){    // estimativa sequencial pela ordem da rota até a minha entrega
-  const arr=_trackRota||[]; if(!arr.length) return null;
-  let cur = viva || (arr[0] && arr[0].coord) || null; if(!cur) return null;
-  let t=Date.now();
-  for(const s of arr){ if(s.coord){ t += legMin(cur, s.coord)*60000 + 4*60000; cur=s.coord; } if(String(s.id)===String(meuId)) return t; }
-  return t;
-}
-function atualizarRastreioCliente(){
-  const e=_ultEntrega; if(!e) return;
-  const dest=coordOf(e);
-  const st=$('track-st'), sub=$('track-sub'), pulse=$('track-pulse'), live=$('track-live');
-  const top=$('track-top'); if(top) top.classList.add('cliente');   // esconde o título grande só na tela do cliente
-  if(pulse) pulse.style.display='none';                             // no design novo o "ao vivo" fica no topo
-  // (sem identificação de nome no card — decisão do cliente)
-  if(e.status==='entregue'){
-    _setSteps('entregue'); _hideCourier(); _hideFila(); _etaPlain('');
-    st.textContent='✓ Pedido entregue';
-    sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛';
-    desenharTrack(dest,null); pararTrackTudo(); return;
-  }
-  if(e.status==='nao_entregue' || e.status==='cancelado'){
-    _setSteps('encerrada'); _hideCourier(); _hideFila(); _etaPlain('');
-    st.textContent='Entrega encerrada';
-    sub.textContent='Fale com a loja para mais informações.';
-    desenharTrack(dest,null); pararTrackTudo(); return;
-  }
-  const r=_trackEntDoc;
-  const viva=(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0)<150000)) ? {lat:r.lat,lng:r.lng} : null;
-  if(e.status==='aguardando'){
-    _setSteps('aguardando'); _hideCourier(); _hideFila(); _etaPlain('');
-    st.textContent='Preparando seu pedido';
-    sub.textContent='Estamos separando o seu pedido. Assim que um entregador sair com ele, você acompanha por aqui.';
-    desenharTrack(dest,null); return;
-  }
-  // em rota
-  const _nome = (_trackEntDoc && _trackEntDoc.nome) ? String(_trackEntDoc.nome).trim().split(' ')[0]
-              : ((ENT_BY_ID[e.entregador]||{}).nome ? String(ENT_BY_ID[e.entregador].nome).split(' ')[0] : '');
-  const _aCaminho = _nome ? `${_nome} está a caminho com o seu pedido!` : 'Seu pedido está a caminho';
-  const posInfo=_posicaoNaRota(_meuId);
-  renderCourier(e, _nome);
-
-  if(!posInfo.atual){
-    // entregador coletou, mas a SUA entrega ainda não é a próxima → não mostra a moto se movendo
-    _setSteps('pego');
-    if(live) live.classList.remove('on');
-    st.textContent = _nome ? `${_nome} coletou o seu pedido` : 'Seu pedido saiu para entrega';
-    const antes=posInfo.pos-1;
-    const prev=_previsaoChegada(viva, _meuId);
-    _etaPlain(''); _fila(antes, prev);
-    sub.innerHTML = 'Assim que chegar a sua vez, a moto aparece aqui no mapa em tempo real.';
-    desenharTrack(dest,null);   // sem a moto no mapa ainda
-    return;
-  }
-  // é a próxima entrega → agora sim mostra a moto indo (se tiver GPS)
-  _setSteps('a_caminho'); _hideFila();
-  if(viva && dest){
-    const min=Math.max(1,Math.round(etaRealMin(viva,dest)));   // tempo real de rua (reaproveita a rota já desenhada)
-    if(live) live.classList.add('on');
-    st.textContent=_aCaminho;
-    if(min<=2){ _etaPlain('Chegando!'); sub.textContent=`${_nome||'O entregador'} está pertinho de você.`; }
-    else { _etaHero(min,'min',Date.now()+min*60000); sub.innerHTML='Acompanhe a moto no mapa em tempo real.'; }
-    desenharTrack(dest,viva);
-  } else if(r && r.lat!=null && dest){
-    // GPS parado: usa a ÚLTIMA posição enviada
-    if(live) live.classList.remove('on');
-    const ageMin=Math.max(1,Math.round((Date.now()-(r.atualizadoEm||Date.now()))/60000));
-    const travel=Math.max(1,Math.round(etaRealMin({lat:r.lat,lng:r.lng},dest)));   // tempo real de rua
-    const arrTs=(r.atualizadoEm||Date.now())+travel*60000;
-    const restante=Math.round((arrTs-Date.now())/60000);
-    const rodape='<br><span style="opacity:.7;font-size:.88em">A localização atualiza assim que o entregador reabrir o app.</span>';
-    st.textContent=_aCaminho;
-    if(restante>2){ _etaHero(restante,'min',arrTs); sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b>${rodape}`; }
-    else { _etaPlain('Chegando!'); sub.innerHTML=`Última atualização há <b>${fmtDur(ageMin)}</b> · deve chegar a qualquer momento${rodape}`; }
-    desenharTrack(dest,{lat:r.lat,lng:r.lng});
-  } else {
-    if(live) live.classList.add('on');
-    _etaPlain(''); st.textContent=_aCaminho;
-    sub.textContent='Aguardando o sinal de GPS do entregador…';
-    desenharTrack(dest,null);
-  }
+function renderEntLiveList(){
+  var box=$('ent-live-list'); if(!box) return;
+  if(_focoId){ box.innerHTML=focoCardHTML(_focoId); return; }
+  var dados=ENTREGADORES.map(function(ent){ return {ent:ent, vivo:!!posicaoViva(ent.id), st:statusInfo(ent.id), d:_entLiveDados(ent.id)}; });
+  dados.sort(function(a,b){ return (b.vivo-a.vivo) || (b.d.rota.length-a.d.rota.length) || (b.d.fin.length-a.d.fin.length); });
+  var mostra=dados.filter(function(x){ return x.vivo || x.d.rota.length || x.d.fin.length || x.st.txt!=='sem registro hoje'; });
+  if(!mostra.length) mostra=dados;
+  box.innerHTML = mostra.map(function(o){
+    var ent=o.ent, d=o.d, st=o.st;
+    return '<div class="elv-card">'
+      +'<div class="elv-head" onclick="selecionarFrota(\''+ent.id+'\')">'
+        +'<span class="elv-dot" style="background:'+ent.cor+'"></span>'
+        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span><span class="elv-when" data-when="'+ent.id+'">'+st.txt+'</span></span>'
+        +'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>'
+        +'<span class="elv-chev">›</span>'
+      +'</div>'
+      +'<div class="elv-counts">'
+        +'<span class="elv-pill rota">🛵 em rota: <b>'+d.rota.length+'</b></span>'
+        +'<span class="elv-pill ok">✓ finalizadas hoje: <b>'+d.fin.length+'</b></span>'
+      +'</div>'
+    +'</div>';
+  }).join('');
 }
 
-function iniciarRastreioCliente(id){
-  if(id==='demo'){ iniciarDemoRastreio(); return; }
-  _meuId=String(id);
-  const sub=()=>{
-    _trackUnsubDoc = fdb.collection('entregas').doc(String(id)).onSnapshot(d=>{
-      if(!d.exists){ $('track-st').textContent='Entrega não encontrada'; $('track-pulse').className='track-pulse off'; return; }
-      _ultEntrega=d.data();
-      if(_ultEntrega.entregador && !_trackUnsubEnt){
-        _trackUnsubEnt=fdb.collection('rastreio').doc(_ultEntrega.entregador).onSnapshot(rd=>{ _trackEntDoc=rd.exists?rd.data():null; atualizarRastreioCliente(); },()=>{});
-      }
-      if(_ultEntrega.entregador && !_trackRotaUnsub){   // rota do entregador → saber se a minha entrega é a próxima
-        _trackRotaUnsub=fdb.collection('entregas').where('entregador','==',_ultEntrega.entregador).onSnapshot(snap=>{
-          const arr=[]; snap.forEach(doc=>{ const x=doc.data()||{}; if(x.status==='em_rota'){ arr.push({id:doc.id, coord:coordOf(x), ordem:(typeof x.ordemManual==='number'?x.ordemManual:9999), roteadoEm:x.roteadoEm||0}); } });
-          arr.sort((a,b)=>(a.ordem-b.ordem)||(a.roteadoEm-b.roteadoEm));
-          _trackRota=arr; atualizarRastreioCliente();
-        },()=>{ _trackRota=[]; });   // se a leitura da rota for bloqueada, segue como antes (mostra ao vivo)
-      }
-      atualizarRastreioCliente();
-    }, ()=>{ $('track-st').textContent='Não consegui carregar agora'; });
-  };
-  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(sub).catch(sub); }
-  else { $('track-st').textContent='Sem conexão com o servidor'; $('track-pulse').className='track-pulse off'; }
-  _trackInt = setInterval(atualizarRastreioCliente, 30000);
-}
-function desenharDemoCli(dest, ent, remPoly){
-  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  _trackLayer.clearLayers();
-  if(dest) L.marker([dest.lat,dest.lng],{icon:_homeIcon()}).addTo(_trackLayer);
-  if(ent) L.marker([ent.lat,ent.lng],{icon:_motoIcon()}).addTo(_trackLayer);
-  if(remPoly && remPoly.length>=2) L.polyline(remPoly,{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackLayer);
-}
-async function iniciarDemoRastreio(){
-  _demoModo='cli'; trackEnsureMap();
-  const badge=$('demo-badge'); if(badge) badge.style.display='block';
-  const rep=$('demo-replay'); if(rep) rep.style.display='none';
-  const ov=$('ent-ov'); if(ov) ov.style.display='none';
-  const tr=$('ent-trocar'); if(tr) tr.style.display='none';
-  const run=++_demoRun;
-  const espera=ms=>new Promise(r=>setTimeout(r,ms));
-  const dest={lat:-16.7055,lng:-49.2650}, start={lat:-16.6800,lng:-49.2920};
-  _meuId='demo';
-
-  // 1) AGUARDANDO ROTA
-  _trackEntDoc=null; _trackRota=[];
-  _ultEntrega={id:'demo',cliente:'Bruno',status:'aguardando',entregador:'gustavo',coord:dest};
-  atualizarRastreioCliente();
-  await espera(3600); if(run!==_demoRun) return;
-
-  // 2) ENTREGADOR PEGOU — a sua é a 3ª da rota (faltam 2), ainda SEM moto no mapa
-  _trackEntDoc={nome:'Gustavo',ativo:true,lat:start.lat,lng:start.lng,atualizadoEm:Date.now()};
-  _trackRota=[
-    {id:'x1',coord:{lat:-16.690,lng:-49.272},ordem:1,roteadoEm:1},
-    {id:'x2',coord:{lat:-16.697,lng:-49.262},ordem:2,roteadoEm:2},
-    {id:'demo',coord:dest,ordem:3,roteadoEm:3}
-  ];
-  _ultEntrega.status='em_rota';
-  atualizarRastreioCliente();
-  await espera(4400); if(run!==_demoRun) return;
-
-  // 3) A CAMINHO DE VOCÊ — a sua virou a 1ª da fila; a moto anda pela rua até você
-  _trackRota=[{id:'demo',coord:dest,ordem:1,roteadoEm:1}];
-  let poly=await rotaRuas([start,dest]); if(run!==_demoRun) return;
-  if(!poly){ poly=rotaFalsaRuas([start,dest]); }
-  try{ _trackMap.fitBounds(poly,{padding:[55,55],maxZoom:15}); }catch(_){}
-  const inc=Math.max(1, Math.round(poly.length/40));
-  let i=0;
-  const passo=()=>{
-    if(run!==_demoRun) return;
-    if(i>=poly.length){
-      // 4) ENTREGUE
-      _trackEntDoc={nome:'Gustavo',ativo:true,lat:dest.lat,lng:dest.lng,atualizadoEm:Date.now()};
-      _ultEntrega.status='entregue';
-      atualizarRastreioCliente();
-      if(rep) rep.style.display='inline-block';
-      return;
-    }
-    _trackEntDoc={nome:'Gustavo',ativo:true,lat:poly[i][0],lng:poly[i][1],atualizadoEm:Date.now()};
-    atualizarRastreioCliente();
-    i+=inc; setTimeout(passo, 820);
-  };
-  passo();
-}
-function reiniciarDemoCliente(){
-  _cliLine=null; _cliDestK=null; _cliReq=null;
-  const rep=$('demo-replay'); if(rep) rep.style.display='none';
-  iniciarDemoRastreio();
-}
-
-/* ===== PAINEL DA FROTA (gestor): vê todos os entregadores ao vivo ===== */
-let _frotaUnsub=null, _ultFrota=null, _frotaTimer=null;
-let _frotaSel=null, _frotaRotaUnsub=null, _frotaStops=[], _frotaFeitas=[], _focoLine=null, _focoKey=null, _focoLineKey=null, _focoStopsKey=null, _focoReq=null, _demoEntregas=null;
-const _frotaIcon=(cor,label,stale)=>L.divIcon({html:'<div class="frota-pin" style="--c:'+cor+';opacity:'+(stale?'.55':'1')+'"><span class="fd"></span><span class="fn">'+label+'</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
-const _doneIcon=()=>L.divIcon({html:'<div class="track-done">✓</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
-function _ehHoje(ts){ if(!ts) return false; const d=new Date(ts), n=new Date(); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate(); }
-function frotaAtualiza(){ if(_frotaSel) desenharFrotaFoco(); else desenharFrotaTodos(); }
-function desenharFrotaTodos(){
-  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  cenaSet('frotaTodos');
-  const docs=_ultFrota||{};
-  const now=Date.now(), pts=[], rows=[], ativos=[], presenca=[];
-  let vivos=0;
-  ENTREGADORES.forEach(e=>{
-    const r=docs[e.id]; let stat,cls;
-    if(r && r.lat!=null){
-      const age=now-(r.atualizadoEm||0);
-      const viva = r.ativo && age<150000;
-      motoSet(e.id, r.lat, r.lng, _frotaIcon(e.cor,e.nome,!viva), viva?'v':'s');  // desliza
-      ativos.push(e.id); pts.push([r.lat,r.lng]); presenca.push(e.id+(viva?'1':'0'));
-      if(viva){ stat='ao vivo'; cls='viva'; vivos++; }
-      else { stat='há '+fmtDur(Math.max(1,Math.round(age/60000))); cls='off'; }
-    } else { stat='sem sinal'; cls='off'; }
-    rows.push('<div class="frota-row" onclick="selecionarFrota(\''+e.id+'\')" style="cursor:pointer"><span class="rdot" style="background:'+e.cor+'"></span><span class="rnome">'+e.nome+' ›</span><span class="rstat '+cls+'">'+stat+'</span></div>');
-  });
-  motosManter(ativos);
-  const list=$('frota-list'); if(list) list.innerHTML=rows.join('');
-  const t=$('track-title'); if(t) t.textContent='Equipe ao vivo'+(vivos?' · '+vivos+' na rua':'');
-  const presSig=presenca.sort().join(',');             // reenquadra só quando muda quem está em cena
-  if(presSig!==_staticSig){ _staticSig=presSig; _fitPend=true; }
-  enquadrar(pts);
-}
-function desenharFrotaFoco(){
-  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  const id=_frotaSel, e=ENT_BY_ID[id]||{cor:'#d4b45a',nome:id};
-  cenaSet('foco:'+id);
-  const r=_ultFrota?_ultFrota[id]:null;
-  const pos=(r && r.lat!=null)?{lat:r.lat,lng:r.lng}:null;
-  const stops=_frotaStops, feitas=_frotaFeitas;
-  const pts=[];
-  const wp=[]; if(pos) wp.push(pos); stops.forEach(s=>{ if(s.coord) wp.push(s.coord); });
-  const ehDemo=(_demoModo==='frota');
-  const stopsKey = stops.map(s=>s.coord?s.coord.lat.toFixed(4)+','+s.coord.lng.toFixed(4):'').join(';');
-  const temLinha = !ehDemo && _focoLine && _focoLine.length>1 && _focoStopsKey===stopsKey;
-  let desviou=true;
-  if(temLinha && pos){ const j0=_idxProx(_focoLine,[pos.lat,pos.lng]); const dx=_focoLine[j0][0]-pos.lat, dy=_focoLine[j0][1]-pos.lng; desviou=(dx*dx+dy*dy)>(0.0012*0.0012); }
-  // recalcula a rota real só quando não há / mudaram as paradas / o entregador desviou (economiza chamadas)
-  if(wp.length>=2 && !ehDemo && (!temLinha || desviou)){
-    const reqK = stopsKey+'|'+(pos?pos.lat.toFixed(3)+','+pos.lng.toFixed(3):'');
-    if(_focoReq!==reqK){ _focoReq=reqK; rotaRuas(wp).then(line=>{ if(line && line.length>1 && _frotaSel===id){ _focoLine=line; _focoStopsKey=stopsKey; if(_motos['foco']) _motos['foco'].idx=0; desenharFrotaFoco(); } }); }
-  }
-  const feitasKey = feitas.map(s=>s.coord?s.coord.lat.toFixed(5)+','+s.coord.lng.toFixed(5):'').join(';');
-  // estático = entregues(✓) + paradas(nº) + linha; NÃO depende da posição viva → não pisca a cada GPS
-  const sig = feitasKey+'#'+stopsKey+'#'+(temLinha?'L':(ehDemo?('D'+_rotaKey(wp)):'r'));
-  estatico(sig, ()=>{
-    feitas.forEach(s=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_doneIcon()}).addTo(_trackLayer); });
-    stops.forEach((s,i)=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); });
-    if(wp.length>=2){
-      if(temLinha) L.polyline(_focoLine,{color:e.cor,weight:4,opacity:.85}).addTo(_trackLayer);
-      else { const fb = ehDemo ? rotaFalsaRuas(wp) : wp.map(p=>[p.lat,p.lng]); L.polyline(fb,{color:e.cor,weight:ehDemo?4:3,opacity:ehDemo?.85:.5,dashArray:ehDemo?null:'6,8'}).addTo(_trackLayer); }
-    }
-  });
-  feitas.forEach(s=>{ if(s.coord) pts.push([s.coord.lat,s.coord.lng]); });
-  stops.forEach(s=>{ if(s.coord) pts.push([s.coord.lat,s.coord.lng]); });
-  if(pos){ if(temLinha) motoSegueLinha('foco',pos.lat,pos.lng,_focoLine); else motoSet('foco',pos.lat,pos.lng,_motoIcon()); pts.push([pos.lat,pos.lng]); }
-  motosManter(pos?['foco']:[]);
-  // status do entregador
-  const now=Date.now(); let statusTxt='sem sinal', viva=false;
-  if(r && r.lat!=null){ const age=now-(r.atualizadoEm||0); viva=(r.ativo&&age<150000); statusTxt=viva?'ao vivo':('última posição há '+fmtDur(Math.max(1,Math.round(age/60000)))); }
-  const nFeitas=feitas.length, nFaltam=stops.length, prox=stops[0];
-  // linha "a caminho de..."
-  let caminho;
-  if(prox){
-    const nm=prox.cliente?String(prox.cliente).trim().split(' ')[0]:'cliente';
-    const _durWp=rotaDurMin(wp); const _proxMin=(_durWp&&_durWp[0]!=null)?_durWp[0]:legMin(pos,prox.coord);   // 1º trecho = pos→próxima, tempo real de rua
-    if(pos && prox.coord) caminho='🏍️ A caminho de '+nm+' · ~'+fmtDur(Math.max(1,Math.round(_proxMin)));
-    else caminho='Próxima parada: '+nm;
-  } else { caminho='✓ Rota concluída'; }
-  // monta a lista
-  let html='<div class="frota-row" onclick="voltarFrota()" style="cursor:pointer"><span class="rnome" style="color:var(--gold-lt)">‹ Ver todos</span><span class="rstat '+(viva?'viva':'off')+'">'+statusTxt+'</span></div>';
-  html+='<div class="frota-row" style="background:rgba(212,180,90,.07)"><span class="rnome" style="color:var(--gold-lt)">'+caminho+'</span></div>';
-  html+='<div class="frota-row"><span class="rnome" style="font-size:12.5px;color:var(--text-soft)">✓ '+nFeitas+' concluída'+(nFeitas===1?'':'s')+'  ·  '+nFaltam+' restante'+(nFaltam===1?'':'s')+'</span></div>';
-  feitas.forEach(s=>{ html+='<div class="frota-row"><span class="rdot" style="background:#7dd08f;opacity:.55"></span><span class="rnome" style="color:var(--text-mute);text-decoration:line-through">'+(s.cliente||'cliente')+'</span><span class="rstat off">entregue</span></div>'; });
-  stops.forEach((s,i)=>{ html+='<div class="frota-row"><span class="rdot" style="background:'+e.cor+'"></span><span class="rnome">'+(i+1)+'. '+(s.cliente||'cliente')+'</span>'+(i===0?'<span class="rstat viva">próxima</span>':'')+'</div>'; });
-  const list=$('frota-list'); if(list) list.innerHTML=html;
-  const t=$('track-title'); if(t) t.textContent=e.nome+'  ·  '+nFeitas+'/'+(nFeitas+nFaltam)+' entregue'+((nFeitas+nFaltam)===1?'':'s');
-  enquadrar(pts);
-}
-function selecionarFrota(id){
-  _frotaSel=id; _focoLine=null; _focoKey=null; _focoLineKey=null; _focoStopsKey=null; _focoReq=null; _frotaStops=[]; _frotaFeitas=[];
-  if(_frotaRotaUnsub){ _frotaRotaUnsub(); _frotaRotaUnsub=null; }
-  if(_demoModo==='frota'){
-    const arr=(_demoEntregas&&_demoEntregas[id])||[];
-    _frotaStops=arr.filter(s=>s.status!=='entregue').map((s,i)=>({cliente:s.cliente,coord:s.coord,ordem:i+1}));
-    _frotaFeitas=arr.filter(s=>s.status==='entregue').map(s=>({cliente:s.cliente,coord:s.coord}));
-    desenharFrotaFoco(); return;
-  }
-  if(FIREBASE_ON&&fdb){
-    _frotaRotaUnsub=fdb.collection('entregas').where('entregador','==',id).onSnapshot(snap=>{
-      const pend=[], feitas=[];
-      snap.forEach(doc=>{ const x=doc.data()||{};
-        if(x.status==='em_rota'){ pend.push({cliente:x.cliente||'',coord:coordOf(x),ordem:(typeof x.ordemManual==='number'?x.ordemManual:9999),roteadoEm:x.roteadoEm||0}); }
-        else if(x.status==='entregue' && _ehHoje(x.entregueEm||x.desfechoEm)){ feitas.push({cliente:x.cliente||'',coord:coordOf(x),quando:x.entregueEm||x.desfechoEm||0}); }
-      });
-      pend.sort((a,b)=>(a.ordem-b.ordem)||(a.roteadoEm-b.roteadoEm));
-      feitas.sort((a,b)=>(a.quando-b.quando));
-      _frotaStops=pend; _frotaFeitas=feitas; if(_frotaSel===id) desenharFrotaFoco();
-    }, ()=>{});
-  }
-  desenharFrotaFoco();
-}
-function voltarFrota(){
-  _frotaSel=null; _frotaStops=[]; _frotaFeitas=[]; _focoLine=null; _focoKey=null; _focoLineKey=null; _focoStopsKey=null; _focoReq=null;
-  if(_frotaRotaUnsub){ _frotaRotaUnsub(); _frotaRotaUnsub=null; }
-  desenharFrotaTodos();
-}
-function iniciarPainelFrota(){
-  trackEnsureMap();
-  $('track-title').textContent='Equipe ao vivo';
-  ['track-pulse','track-st','track-eta','track-sub'].forEach(id=>{ const el=$(id); if(el) el.style.display='none'; });
-  const list=$('frota-list'); if(list){ list.style.display='block'; list.innerHTML='<div class="frota-row"><span class="rnome">Carregando…</span></div>'; }
-  const sub=()=>{ _frotaUnsub = fdb.collection('rastreio').onSnapshot(
-      snap=>{ const docs={}; snap.forEach(d=>{ docs[d.id]=d.data()||{}; }); _ultFrota=docs; frotaAtualiza(); },
-      ()=>{ if(list) list.innerHTML='<div class="frota-row"><span class="rnome">Não consegui carregar agora</span></div>'; }
-    ); };
-  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(sub).catch(sub); }
-  else if(list){ list.innerHTML='<div class="frota-row"><span class="rnome">Sem conexão com o servidor</span></div>'; }
-  if(_frotaTimer) clearInterval(_frotaTimer);
-  _frotaTimer=setInterval(()=>{ if(_ultFrota) frotaAtualiza(); }, 30000);
-}
-function iniciarDemoFrota(){
-  trackEnsureMap(); _demoModo='frota';
-  ['track-pulse','track-st','track-eta','track-sub'].forEach(id=>{ const el=$(id); if(el) el.style.display='none'; });
-  const list=$('frota-list'); if(list) list.style.display='block';
-  const badge=$('demo-badge'); if(badge) badge.style.display='block';
-  const now=Date.now();
-  _ultFrota={
-    gustavo:{lat:-16.6905,lng:-49.2680, ativo:true,  atualizadoEm:now-20000},
-    joao:   {lat:-16.7050,lng:-49.2540, ativo:true,  atualizadoEm:now-50000},
-    ewald:  {lat:-16.6790,lng:-49.2855, ativo:true,  atualizadoEm:now-95000},
-    gregory:{lat:-16.7125,lng:-49.2600, ativo:false, atualizadoEm:now-7*60000}
-  };
-  _demoEntregas={
-    gustavo:[{cliente:'Bruno Silva',status:'entregue',coord:{lat:-16.6980,lng:-49.2620}},{cliente:'Carla Mendes',status:'em_rota',coord:{lat:-16.6845,lng:-49.2740}},{cliente:'Helena Dias',status:'em_rota',coord:{lat:-16.6760,lng:-49.2700}}],
-    joao:   [{cliente:'Diego Rocha',status:'entregue',coord:{lat:-16.6990,lng:-49.2520}},{cliente:'Eva Lima',status:'entregue',coord:{lat:-16.7070,lng:-49.2510}},{cliente:'Fábio Souza',status:'em_rota',coord:{lat:-16.7180,lng:-49.2605}}],
-    ewald:  [{cliente:'Gabi Nunes',status:'em_rota',coord:{lat:-16.6720,lng:-49.2905}}],
-    gregory:[{cliente:'Igor Melo',status:'entregue',coord:{lat:-16.7125,lng:-49.2600}}]
-  };
-  _frotaSel=null;
-  desenharFrotaTodos();
-}
-
-
-/* ===== modo ENTREGADOR: transmite o GPS pra coleção rastreio/{id} (igual ao painel) ===== */
-let _entWatch=null, _entLast=0, _entWake=null, _entSent=null;
-let _entPos=null, _entRotaStops=[], _entRotaUnsub=null;
-let _entLine=null, _entLineKey=null, _entReqKey=null, _entStopsKey=null;
-const _numIcon=(n)=>L.divIcon({html:'<div class="track-num">'+n+'</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
-function desenharRotaEntregador(){
-  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  cenaSet('rotaEnt');
-  const pts=[], stops=_entRotaStops, ent=_entPos;
-  const wp=[]; if(ent) wp.push(ent); stops.forEach(s=>{ if(s.coord) wp.push(s.coord); });
-  const stopsKey = stops.map(s=>s.coord?s.coord.lat.toFixed(4)+','+s.coord.lng.toFixed(4):'').join(';');
-  const temLinha = _entLine && _entLine.length>1 && _entStopsKey===stopsKey;
-  let desviou=true;
-  if(temLinha && ent){ const j0=_idxProx(_entLine,[ent.lat,ent.lng]); const dx=_entLine[j0][0]-ent.lat, dy=_entLine[j0][1]-ent.lng; desviou=(dx*dx+dy*dy)>(0.0012*0.0012); }
-  if(wp.length>=2 && (!temLinha || desviou)){      // recalcula a rota só ao não ter / mudar paradas / desviar
-    const reqK = stopsKey+'|'+(ent?ent.lat.toFixed(3)+','+ent.lng.toFixed(3):'');
-    if(_entReqKey!==reqK){ _entReqKey=reqK; rotaRuas(wp).then(line=>{ if(line && line.length>1){ _entLine=line; _entStopsKey=stopsKey; if(_motos['ent']) _motos['ent'].idx=0; desenharRotaEntregador(); } }); }
-  }
-  const sig = stopsKey+'#'+(temLinha?'L':'r');
-  estatico(sig, ()=>{
-    stops.forEach((s,i)=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); });
-    if(wp.length>=2){
-      if(temLinha) L.polyline(_entLine,{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackLayer);
-      else L.polyline(wp.map(p=>[p.lat,p.lng]),{color:'#d4b45a',weight:3,opacity:.5,dashArray:'6,8'}).addTo(_trackLayer);
-    }
-  });
-  stops.forEach(s=>{ if(s.coord) pts.push([s.coord.lat,s.coord.lng]); });
-  if(ent){ if(temLinha) motoSegueLinha('ent',ent.lat,ent.lng,_entLine); else motoSet('ent',ent.lat,ent.lng,_motoIcon()); pts.push([ent.lat,ent.lng]); }
-  motosManter(ent?['ent']:[]);
-  enquadrar(pts);
-}
-function statusRotaEntregador(d, now){
-  const st=$('track-st'), sub=$('track-sub'), eta=$('track-eta'), title=$('track-title');
-  title.textContent='Sua rota';
-  const stops=_entRotaStops;
-  const rodape='Mantenha esta tela aberta enquanto entrega.';
-  if(!stops.length){
-    st.textContent='📍 Compartilhando sua localização'; eta.textContent='';
-    sub.innerHTML='Sem entregas em rota no momento.<br>Quando a loja te passar a rota, o caminho aparece aqui. '+rodape;
-    return;
-  }
-  const prox=stops[0];
-  const nome = prox.cliente ? String(prox.cliente).trim().split(' ')[0] : '';
-  let etaTxt=''; if(_entPos && prox.coord){ const _wp=[_entPos]; stops.forEach(s=>{ if(s.coord) _wp.push(s.coord); }); const _d=rotaDurMin(_wp); const _m=(_d&&_d[0]!=null)?_d[0]:legMin(_entPos,prox.coord); etaTxt='~'+fmtDur(Math.max(1,Math.round(_m))); }
-  st.textContent = stops.length>1 ? ('Próxima: '+(nome||'cliente')+' · '+stops.length+' paradas') : ('Indo até '+(nome||'o cliente'));
-  eta.textContent = etaTxt;
-  const upd = now ? ('Compartilhando · atualizado '+fmtClock(now)) : 'Compartilhando sua localização';
-  sub.innerHTML = upd+'<br>'+rodape;
-}
-function assinarRotaEntregador(d){
-  if(!(FIREBASE_ON&&fdb)) return;
-  if(_entRotaUnsub){ _entRotaUnsub(); _entRotaUnsub=null; }
-  try{
-    _entRotaUnsub = fdb.collection('entregas').where('entregador','==',d.id).onSnapshot(snap=>{
-      const arr=[];
-      snap.forEach(doc=>{ const e=doc.data()||{}; if(e.status==='em_rota'){ arr.push({id:doc.id, cliente:e.cliente||'', coord:coordOf(e), ordem:(typeof e.ordemManual==='number'?e.ordemManual:9999), roteadoEm:e.roteadoEm||0}); } });
-      arr.sort((a,b)=>(a.ordem-b.ordem)||(a.roteadoEm-b.roteadoEm));
-      _entRotaStops=arr; desenharRotaEntregador(); statusRotaEntregador(d, _entLast||0);
-    }, err=>console.warn('rota', err));
-  }catch(err){ console.warn('rota sub', err); }
-}
-async function pedirWakeEnt(){ try{ if('wakeLock' in navigator && !_entWake){ _entWake=await navigator.wakeLock.request('screen'); _entWake.addEventListener('release',()=>{_entWake=null;}); } }catch(_){ } }
-function transmitirEnt(d,c){
-  if(!FIREBASE_ON||!fdb) return;
-  fdb.collection('rastreio').doc(d.id).set({
-    entregador:d.id, nome:d.nome||'', cor:d.cor||'#d4b45a',
-    lat:c.latitude, lng:c.longitude, precisao:c.accuracy||null,
-    ativo:true, atualizadoEm:Date.now()
-  }).catch(e=>console.warn('tx', e));
-}
-function iniciarModoEntregador(d){
-  $('track-title').textContent='Transmitindo localização';
-  $('track-st').textContent='📍 Iniciando GPS…'; $('track-eta').textContent=''; $('track-pulse').className='track-pulse';
-  $('track-sub').textContent='Mantenha esta tela aberta enquanto faz as entregas.';
-  if(!navigator.geolocation){ $('track-st').textContent='Este aparelho não permite localização'; $('track-pulse').className='track-pulse off'; return; }
-  pedirWakeEnt();
-  assinarRotaEntregador(d);
-  _entWatch = navigator.geolocation.watchPosition(
-    pos=>{
-      const now=Date.now();
-      _entPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
-      desenharRotaEntregador();
-      if(now-_entLast>=60000){     // no máximo 1x/min
-        const moveu = !_entSent || haversine(_entSent,_entPos)*1000 >= 35;   // andou ao menos ~35m
-        const heartbeat = now-_entLast>=120000;                              // a cada 2 min envia mesmo parado (mantém "ao vivo")
-        if(moveu || heartbeat){
-          _entLast=now; _entSent={lat:_entPos.lat,lng:_entPos.lng};
-          transmitirEnt(d,pos.coords);
-          statusRotaEntregador(d, now);
-        }
-      }
-    },
-    err=>{ $('track-st').textContent='Não consegui pegar o GPS'; $('track-sub').textContent='Permita a localização no navegador e abra o link de novo.'; $('track-pulse').className='track-pulse off'; },
-    {enableHighAccuracy:true, maximumAge:30000, timeout:20000}
-  );
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') pedirWakeEnt(); });
-  window.addEventListener('pagehide', ()=>{ if(FIREBASE_ON&&fdb) fdb.collection('rastreio').doc(d.id).set({ativo:false,atualizadoEm:Date.now()},{merge:true}).catch(()=>{}); });
-}
-
-/* ===== DEMONSTRAÇÃO (sem GPS / sem Firebase): moto andando pela rota ===== */
-let _demoRun=0, _demoModo=null;
-function reiniciarDemo(){ if(_demoModo==='cli') reiniciarDemoCliente(); else reiniciarDemoEnt(); }
-function desenharDemoEnt(remPoly){
-  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
-  _trackLayer.clearLayers();
-  _entRotaStops.forEach((s,i)=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); });
-  if(_entPos) L.marker([_entPos.lat,_entPos.lng],{icon:_motoIcon()}).addTo(_trackLayer);
-  if(remPoly && remPoly.length>=2) L.polyline(remPoly,{color:'#d4b45a',weight:4,opacity:.85}).addTo(_trackLayer);
-}
-async function iniciarDemoEntregador(){
-  trackEnsureMap();
-  _demoModo='ent';
-  const badge=$('demo-badge'); if(badge) badge.style.display='block';
-  const rep=$('demo-replay'); if(rep) rep.style.display='none';
-  const tr=$('ent-trocar'); if(tr) tr.style.display='none';
-  const ov=$('ent-ov'); if(ov) ov.style.display='none';
-  $('track-pulse').className='track-pulse';
-  const d={id:'gustavo',nome:'Gustavo',cor:'#d4b45a'};
-  const start={lat:-16.6700,lng:-49.2545};
-  const stopsRaw=[
-    {id:'d1',cliente:'Bruno Silva',  coord:{lat:-16.7052,lng:-49.2680}},
-    {id:'d2',cliente:'Carla Mendes', coord:{lat:-16.6845,lng:-49.2740}},
-    {id:'d3',cliente:'Diego Rocha',  coord:{lat:-16.6960,lng:-49.2560}}
-  ];
-  _entRotaStops=stopsRaw.map((s,i)=>({id:s.id,cliente:s.cliente,coord:s.coord,ordem:i+1}));
-  _entPos={lat:start.lat,lng:start.lng};
-  statusRotaEntregador(d, Date.now());
-  const run=++_demoRun;
-  const wp=[start].concat(stopsRaw.map(s=>s.coord));
-  let poly=await rotaRuas(wp);
-  if(run!==_demoRun) return;
-  if(!poly){ poly=rotaFalsaRuas(wp); }
-  const stopIdx=stopsRaw.map(s=>{ let best=0,bd=1e18; for(let idx=0;idx<poly.length;idx++){ const dd=Math.pow(poly[idx][0]-s.coord.lat,2)+Math.pow(poly[idx][1]-s.coord.lng,2); if(dd<bd){bd=dd;best=idx;} } return best; });
-  try{ _trackMap.fitBounds(poly,{padding:[55,55],maxZoom:15}); }catch(_){}
-  let i=0, delivered=0;
-  const inc=Math.max(1,Math.round(poly.length/150));
-  const step=()=>{
-    if(run!==_demoRun) return;
-    if(delivered<stopIdx.length && i>=stopIdx[delivered]){
-      const ent=_entRotaStops.shift(); delivered++;
-      _entPos={lat:poly[Math.min(i,poly.length-1)][0],lng:poly[Math.min(i,poly.length-1)][1]};
-      desenharDemoEnt(poly.slice(i));
-      $('track-title').textContent='Sua rota';
-      $('track-st').textContent='✓ Entregou '+String(ent.cliente).split(' ')[0];
-      $('track-eta').textContent='';
-      $('track-sub').innerHTML = _entRotaStops.length ? 'Seguindo para a próxima parada…' : 'Última entrega concluída!';
-      $('track-pulse').className='track-pulse done';
-      setTimeout(()=>{ if(run!==_demoRun) return; $('track-pulse').className='track-pulse'; step(); }, 1300);
-      return;
-    }
-    if(i>=poly.length){
-      $('track-title').textContent='Rota concluída';
-      $('track-st').textContent='✓ Todas as entregas finalizadas';
-      $('track-eta').textContent=''; $('track-pulse').className='track-pulse done';
-      $('track-sub').innerHTML='Isto é uma demonstração. Toque em <b>Repetir</b> pra ver de novo.';
-      desenharDemoEnt(null);
-      if(rep) rep.style.display='inline-block';
-      return;
-    }
-    _entPos={lat:poly[i][0],lng:poly[i][1]};
-    desenharDemoEnt(poly.slice(i));
-    statusRotaEntregador(d, Date.now());
-    i+=inc;
-    setTimeout(step, 130);
-  };
-  step();
-}
-function reiniciarDemoEnt(){
-  _entRotaStops=[]; _entPos=null; _entLine=null; _entLineKey=null;
-  const rep=$('demo-replay'); if(rep) rep.style.display='none';
-  iniciarDemoEntregador();
-}
-
-/* ===== modo "sou entregador" (escolhe o nome) ===== */
-const ENTREGADORES=[
-  {id:'gustavo',nome:'Gustavo',cor:'#d4b45a',fone:'5562998563940'},
-  {id:'joao',nome:'João',cor:'#6fb0a6',fone:'5562992271346'},
-  {id:'ewald',nome:'Ewald',cor:'#c97b5a',fone:'5562982181829'},
-  {id:'gregory',nome:'Gregory',cor:'#d99a5a',fone:'5562983129321'},
-  {id:'hugo',nome:'Hugo',cor:'#8e9cd6',fone:'5562986218413'},
-  {id:'flavio',nome:'Flavio',cor:'#cf8aa8',fone:'5562999296060'},
-  {id:'junior',nome:'Junior',cor:'#7fb0d4',fone:'5562993741125'}
-];
-const ENT_BY_ID = ENTREGADORES.reduce((m,e)=>{m[e.id]=e;return m;},{});
-function mostrarEscolhaEntregador(){
-  const ov=$('ent-ov'), list=$('ent-ov-list'); if(!ov||!list) return;
-  const h=$('ent-ov-h'), sub=$('ent-ov-sub');
-  if(h) h.textContent='Compartilhar localização'; if(sub) sub.textContent='Toque no seu nome pra começar:';
-  list.innerHTML = ENTREGADORES.map(e=>
-    '<button class="ent-btn" onclick="confirmarEntregador(\''+e.id+'\')"><span class="dot" style="background:'+e.cor+'"></span>'+e.nome+'</button>'
-  ).join('');
-  ov.style.display='flex';
-}
-function pedirSenhaEntregador(id){
-  const d=ENT_BY_ID[id]; if(!d) return;
-  let saved=null; try{ saved=localStorage.getItem('ls_ent_id'); }catch(_){}
-  if(saved===id){ confirmarEntregador(id); return; }   // já liberado nesse aparelho
-  const ov=$('ent-ov'), list=$('ent-ov-list'); if(!ov||!list) return;
-  const h=$('ent-ov-h'), sub=$('ent-ov-sub');
-  if(h) h.textContent=d.nome; if(sub) sub.textContent='Digite sua senha pra começar:';
-  list.innerHTML =
-    '<input id="ent-senha" type="password" inputmode="text" autocomplete="off" autocapitalize="none" placeholder="senha" '+
-      'style="width:100%;padding:14px;border-radius:12px;border:1px solid var(--line-strong);background:rgba(0,0,0,.18);color:var(--text);font-size:16px;text-align:center;margin-bottom:10px;box-sizing:border-box" '+
-      'onkeydown="if(event.key===\'Enter\')tentarEntrarEntregador(\''+id+'\')">'+
-    '<div id="ent-erro" style="display:none;color:#e8a0a0;font-size:12.5px;margin:-4px 0 10px">Senha incorreta</div>'+
-    '<button class="ent-btn" style="background:linear-gradient(180deg,#ebd48a,#d4b45a);color:#283d1a" onclick="tentarEntrarEntregador(\''+id+'\')">Entrar</button>'+
-    '<div onclick="mostrarEscolhaEntregador()" style="color:var(--text-soft);font-size:13px;margin-top:4px;cursor:pointer">‹ voltar</div>';
-  ov.style.display='flex';
-  setTimeout(()=>{ const i=$('ent-senha'); if(i) i.focus(); }, 150);
-}
-function tentarEntrarEntregador(id){
-  const i=$('ent-senha'); const val=((i&&i.value)||'').trim().toLowerCase();
-  if(val === (id+'2026')){ confirmarEntregador(id); }
-  else { const er=$('ent-erro'); if(er) er.style.display='block'; if(i){ i.value=''; i.focus(); } }
-}
-function confirmarEntregador(id){
-  const d=ENT_BY_ID[id]; if(!d) return;
-  try{ localStorage.setItem('ls_ent_id', id); }catch(_){}
-  const ov=$('ent-ov'); if(ov) ov.style.display='none';
-  const tr=$('ent-trocar'); if(tr) tr.style.display='block';
-  trackEnsureMap();
-  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(()=>iniciarModoEntregador(d)).catch(()=>iniciarModoEntregador(d)); }
-  else iniciarModoEntregador(d);
-}
-function trocarEntregador(){
-  try{ localStorage.removeItem('ls_ent_id'); }catch(_){}
-  if(_entWatch!=null && navigator.geolocation){ navigator.geolocation.clearWatch(_entWatch); _entWatch=null; }
-  if(_entRotaUnsub){ _entRotaUnsub(); _entRotaUnsub=null; }
-  _entLast=0; _entPos=null; _entRotaStops=[]; _entLine=null; _entLineKey=null; _entSent=null; _entStopsKey=null;
-  mostrarEscolhaEntregador();
-}
-function entrarModoEntregadorFacil(){
-  let saved=null; try{ saved=localStorage.getItem('ls_ent_id'); }catch(_){}
-  if(saved && ENT_BY_ID[saved]) confirmarEntregador(saved);
-  else mostrarEscolhaEntregador();
-}
-
-/* ===== "Adicionar à tela de início" (pra não esquecerem de abrir) ===== */
-let _deferredPrompt=null;
-window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); _deferredPrompt=e; });
-function _ehIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent||''); }
-function _appInstalado(){ try{ return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone===true; }catch(_){ return false; } }
-function mostrarInstalar(){
-  if(_appInstalado()) return;
-  try{ if(localStorage.getItem('ls_install_dismiss')==='1') return; }catch(_){}
-  const b=$('inst-bar'); if(b) b.style.display='flex';
-}
-function fecharInstalar(){ const b=$('inst-bar'); if(b) b.style.display='none'; try{ localStorage.setItem('ls_install_dismiss','1'); }catch(_){} }
-function instalarApp(){
-  if(_deferredPrompt){ try{ _deferredPrompt.prompt(); _deferredPrompt.userChoice.finally(function(){ _deferredPrompt=null; }); }catch(_){} fecharInstalar(); return; }
-  const h=$('inst-h'), st=$('inst-steps');
-  if(_ehIOS()){
-    if(h) h.textContent='Adicionar no iPhone';
-    if(st) st.innerHTML='1. Toque no botão <b>Compartilhar</b> (o quadradinho com a setinha pra cima), na barra do Safari.<br>2. Role e toque em <b>Adicionar à Tela de Início</b>.<br>3. Toque em <b>Adicionar</b>.<br><br>Pronto — vai aparecer o ícone <b>Loretto</b> na sua tela.';
-  } else {
-    if(h) h.textContent='Adicionar no Android';
-    if(st) st.innerHTML='1. Toque no menu <b>⋮</b> (canto superior do navegador).<br>2. Toque em <b>Adicionar à tela inicial</b> (ou <b>Instalar app</b>).<br>3. Confirme.<br><br>Pronto — vai aparecer o ícone <b>Loretto</b> na sua tela.';
-  }
-  const ov=$('inst-ov'); if(ov) ov.style.display='flex';
-}
-
-/* ===== bootstrap: lê o token do link ===== */
-(function(){
-  // PAINEL DA FROTA (gestor): #equipe / #frota / #gestor — vê todos ao vivo
-  if(/^#(equipe|frota|gestor)/.test(location.hash||'')){
-    trackEnsureMap(); iniciarPainelFrota(); return;
-  }
-  // DEMONSTRAÇÃO: #demo, #demo-entregador ou #entregador/demo
-  if(/^#(demo($|-)|entregador\/demo)/.test(location.hash||'')){
-    trackEnsureMap(); iniciarDemoEntregador(); return;
-  }
-  // LINK INDIVIDUAL do entregador: #eu/<id> (abre direto no nome dele, sem senha)
-  const hashEu=(/^#eu\/([a-z]+)/.exec(location.hash||'')||[])[1];
-  if(hashEu){
-    trackEnsureMap();
-    if(ENT_BY_ID[hashEu]) confirmarEntregador(hashEu);
-    else mostrarEscolhaEntregador();
-    return;
-  }
-  // modo "sou entregador" fácil: #entregador (um link só pra todos)
-  if(/^#(entregador|sou-entregador)/.test(location.hash||'')){
-    trackEnsureMap(); entrarModoEntregadorFacil(); return;
-  }
-  // modo ENTREGADOR (transmite): #transmitir/<token>
-  const hashTx=(/^#transmitir\/(.+)$/.exec(location.hash||'')||[])[1];
-  if(hashTx){
-    const d=dadosDeTokenEnt(hashTx);
-    if(d){
-      trackEnsureMap();
-      if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(()=>iniciarModoEntregador(d)).catch(()=>iniciarModoEntregador(d)); }
-      else iniciarModoEntregador(d);
-      return;
-    }
-    $('track-title').textContent='Link inválido'; $('track-st').textContent='Link de transmissão inválido';
-    $('track-sub').textContent='Peça um novo link para a loja.'; $('track-pulse').className='track-pulse off'; trackEnsureMap(); return;
-  }
-  // modo CLIENTE (só vê): #acompanhar/<token> ou ?track=
-  const hashTok=(/^#acompanhar\/(.+)$/.exec(location.hash||'')||[])[1];
-  const qTrack=new URLSearchParams(location.search).get('track');
-  const id = hashTok ? (hashTok==='demo'?'demo':idDeToken(hashTok)) : qTrack;
-  if(id){ iniciarRastreioCliente(id); }
-  else {
-    $('track-title').textContent='Rastreio'; $('track-st').textContent='Link de rastreio inválido';
-    $('track-sub').textContent='Confira o link enviado pela loja.'; $('track-pulse').className='track-pulse off';
-    trackEnsureMap();
-  }
-})();
+window.addEventListener('load', abrirEntregadores);
 </script>
 </body>
 </html>
