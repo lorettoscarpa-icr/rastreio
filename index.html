@@ -273,7 +273,7 @@ function trackEnsureMap(){
   setTimeout(()=>_trackMap.invalidateSize(),120);
 }
 /* ===== rota real pelas ruas (OSRM público; cai na reta se falhar) ===== */
-const _rotaCache={};
+const _rotaCache={}, _durCache={};   // linhas E durações REAIS de rua (mesma resposta do OSRM)
 function _rotaKey(pts){ return pts.map(p=>p.lat.toFixed(3)+','+p.lng.toFixed(3)).join(';'); }
 async function rotaRuas(pts){
   if(!pts || pts.length<2) return null;
@@ -286,12 +286,19 @@ async function rotaRuas(pts){
     const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(to);
     if(!r.ok) return null;
     const j=await r.json();
-    const g=j&&j.routes&&j.routes[0]&&j.routes[0].geometry&&j.routes[0].geometry.coordinates;
+    const rt=j&&j.routes&&j.routes[0];
+    const g=rt&&rt.geometry&&rt.geometry.coordinates;
     if(!g||!g.length) return null;
     const line=g.map(c=>[c[1],c[0]]);   // [lng,lat] -> [lat,lng]
-    _rotaCache[key]=line; return line;
+    _rotaCache[key]=line;
+    if(rt.legs && rt.legs.length) _durCache[key]=rt.legs.map(l=>l.duration/60);   // minutos REAIS por trecho — vem de graça na mesma resposta
+    return line;
   }catch(_){ return null; }
 }
+/* duração REAL de rua (minutos por trecho) já obtida pelo rotaRuas — sem nenhuma chamada extra ao OSRM.
+   etaRealMin: tempo real entre 2 pontos quando já temos a rota; senão cai na estimativa antiga (legMin). */
+function rotaDurMin(pts){ if(!pts||pts.length<2) return null; const d=_durCache[_rotaKey(pts)]; return (d&&d.length)?d:null; }
+function etaRealMin(a,b){ const d=rotaDurMin([a,b]); return (d&&d[0]!=null)?d[0]:legMin(a,b); }
 /* fallback p/ DEMO: caminho com quinas (estilo quarteirão) quando a rota real não responde */
 function _densify(line, perSeg){
   const out=[];
@@ -514,7 +521,7 @@ function atualizarRastreioCliente(){
   // é a próxima entrega → agora sim mostra a moto indo (se tiver GPS)
   _setSteps('a_caminho'); _hideFila();
   if(viva && dest){
-    const min=Math.max(1,Math.round(legMin(viva,dest)));
+    const min=Math.max(1,Math.round(etaRealMin(viva,dest)));   // tempo real de rua (reaproveita a rota já desenhada)
     if(live) live.classList.add('on');
     st.textContent=_aCaminho;
     if(min<=2){ _etaPlain('Chegando!'); sub.textContent=`${_nome||'O entregador'} está pertinho de você.`; }
@@ -524,7 +531,7 @@ function atualizarRastreioCliente(){
     // GPS parado: usa a ÚLTIMA posição enviada
     if(live) live.classList.remove('on');
     const ageMin=Math.max(1,Math.round((Date.now()-(r.atualizadoEm||Date.now()))/60000));
-    const travel=Math.max(1,Math.round(legMin({lat:r.lat,lng:r.lng},dest)));
+    const travel=Math.max(1,Math.round(etaRealMin({lat:r.lat,lng:r.lng},dest)));   // tempo real de rua
     const arrTs=(r.atualizadoEm||Date.now())+travel*60000;
     const restante=Math.round((arrTs-Date.now())/60000);
     const rodape='<br><span style="opacity:.7;font-size:.88em">A localização atualiza assim que o entregador reabrir o app.</span>';
@@ -702,7 +709,8 @@ function desenharFrotaFoco(){
   let caminho;
   if(prox){
     const nm=prox.cliente?String(prox.cliente).trim().split(' ')[0]:'cliente';
-    if(pos && prox.coord) caminho='🏍️ A caminho de '+nm+' · ~'+fmtDur(Math.max(1,Math.round(legMin(pos,prox.coord))));
+    const _durWp=rotaDurMin(wp); const _proxMin=(_durWp&&_durWp[0]!=null)?_durWp[0]:legMin(pos,prox.coord);   // 1º trecho = pos→próxima, tempo real de rua
+    if(pos && prox.coord) caminho='🏍️ A caminho de '+nm+' · ~'+fmtDur(Math.max(1,Math.round(_proxMin)));
     else caminho='Próxima parada: '+nm;
   } else { caminho='✓ Rota concluída'; }
   // monta a lista
@@ -823,7 +831,7 @@ function statusRotaEntregador(d, now){
   }
   const prox=stops[0];
   const nome = prox.cliente ? String(prox.cliente).trim().split(' ')[0] : '';
-  let etaTxt=''; if(_entPos && prox.coord){ etaTxt='~'+fmtDur(Math.max(1,Math.round(legMin(_entPos,prox.coord)))); }
+  let etaTxt=''; if(_entPos && prox.coord){ const _wp=[_entPos]; stops.forEach(s=>{ if(s.coord) _wp.push(s.coord); }); const _d=rotaDurMin(_wp); const _m=(_d&&_d[0]!=null)?_d[0]:legMin(_entPos,prox.coord); etaTxt='~'+fmtDur(Math.max(1,Math.round(_m))); }
   st.textContent = stops.length>1 ? ('Próxima: '+(nome||'cliente')+' · '+stops.length+' paradas') : ('Indo até '+(nome||'o cliente'));
   eta.textContent = etaTxt;
   const upd = now ? ('Compartilhando · atualizado '+fmtClock(now)) : 'Compartilhando sua localização';
