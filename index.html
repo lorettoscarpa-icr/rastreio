@@ -70,14 +70,38 @@
   .ls-num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--gold);color:#14210d;font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
   .ls-done{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#7dd08f;color:#0c2c1a;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
+  .login{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px}
+  .login-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 22px}
+  .login-card h1{font-family:var(--ff-display);color:var(--gold-lt);font-size:22px;margin:0 0 4px;font-weight:600}
+  .login-card p{color:var(--text-soft);font-size:13px;margin:0 0 18px;line-height:1.5}
+  .login-card label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mute);margin:0 0 5px}
+  .login-card input{width:100%;padding:11px 12px;margin-bottom:13px;background:var(--bg2);border:1px solid var(--line-strong);border-radius:10px;color:var(--text);font-family:var(--ff-eyebrow);font-size:15px}
+  .login-card input:focus{outline:none;border-color:var(--gold)}
+  .login-btn{width:100%;padding:12px;background:var(--gold);color:var(--ink);border:0;border-radius:11px;font-family:var(--ff-eyebrow);font-weight:600;font-size:15px;cursor:pointer}
+  .login-btn:disabled{opacity:.6}
+  .login-err{color:#e6b0a8;font-size:12.5px;margin-top:10px;min-height:16px}
+
   @media(max-width:560px){ .ent-live-map{height:240px} }
 </style>
 </head>
 <body>
 
+<div id="login" class="login">
+  <div class="login-card">
+    <h1>Rastreio da equipe</h1>
+    <p>Acesso restrito — entre com sua conta da Loretto Scarpa.</p>
+    <label>E-mail</label>
+    <input id="lg-email" type="email" value="lorettoscarpa@gmail.com" autocomplete="username">
+    <label>Senha</label>
+    <input id="lg-pass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="login-btn" id="lg-btn" onclick="entrar()">Entrar</button>
+    <div class="login-err" id="lg-err"></div>
+  </div>
+</div>
+
 <div id="ent-live-ov" class="ent-live-ov">
   <div class="ent-live-head">
-    <div class="ent-live-title" id="ent-live-title">🛵 Equipe ao vivo</div>
+    <div class="ent-live-title" id="ent-live-title">🛵 Entregadores Ao Vivo</div>
   </div>
   <div class="ent-live-body">
     <div id="map-live" class="ent-live-map"></div>
@@ -246,7 +270,7 @@ function desenharFoco(){
 
 /* ===== foco / voltar ===== */
 function selecionarFrota(id){ _focoId=id; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 '+ENT[id].nome; $('ent-live-sec').textContent='Rota em andamento'; renderEntLiveList(); renderMapLive(); var b=$('ent-live-body'); if(b) b.scrollTop=0; }
-function voltarFrota(){ _focoId=null; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 Equipe ao vivo'; $('ent-live-sec').textContent='Toque em um entregador para ver a rota dele'; renderEntLiveList(); renderMapLive(); }
+function voltarFrota(){ _focoId=null; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 Entregadores Ao Vivo'; $('ent-live-sec').textContent='Toque em um entregador para ver a rota dele'; renderEntLiveList(); renderMapLive(); }
 
 /* ===== lista ===== */
 function _rowsRota(d){
@@ -312,29 +336,49 @@ function renderEntLiveList(){
   }).join('');
 }
 
-/* ===== conexão com o Firebase ===== */
-var _unsubRast=null, _unsubEnt=null;
+/* ===== conexão / login ===== */
+var _unsubRast=null, _unsubEnt=null, _started=false;
 function listMsg(t){ var b=$('ent-live-list'); if(b) b.innerHTML='<div class="elv-msg">'+esc(t)+'</div>'; }
+function showLogin(){ var l=$('login'); if(l) l.style.display='flex'; }
+function hideLogin(){ var l=$('login'); if(l) l.style.display='none'; }
+function entrar(){
+  var em=(($('lg-email')||{}).value||'').trim(), pw=($('lg-pass')||{}).value||'';
+  var btn=$('lg-btn'), err=$('lg-err'); if(err) err.textContent='';
+  if(!em||!pw){ if(err) err.textContent='Preencha e-mail e senha.'; return; }
+  if(!FIREBASE_ON){ if(err) err.textContent='Sem conexão com o servidor.'; return; }
+  if(btn){ btn.disabled=true; btn.textContent='Entrando…'; }
+  firebase.auth().signInWithEmailAndPassword(em,pw).catch(function(e){
+    if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
+    var c=(e&&e.code)||'';
+    if(err) err.textContent = /wrong-password|invalid-credential|invalid-login|user-not-found/.test(c) ? 'E-mail ou senha incorretos.'
+      : /too-many-requests/.test(c) ? 'Muitas tentativas. Aguarde um pouco.'
+      : /invalid-email/.test(c) ? 'E-mail inválido.' : 'Não consegui entrar agora.';
+  });
+}
 function iniciar(){
-  try{ ensureMapLive(); }catch(e){ _mapFail(); }
+  if(_started) return; _started=true;
   if(!FIREBASE_ON || !fdb){ listMsg('Sem conexão com o servidor.'); return; }
-  var go=function(){
-    _unsubRast=fdb.collection('rastreio').onSnapshot(function(snap){
-      var m={}; snap.forEach(function(d){ m[d.id]=d.data()||{}; }); liveEnt=m;
-      renderEntLiveList(); renderMapLive();
-    }, function(e){ console.warn('rastreio', e); });
-    _unsubEnt=fdb.collection('entregas').onSnapshot(function(snap){
-      var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _todas=arr;
-      renderEntLiveList(); renderMapLive();
-    }, function(e){ console.warn('entregas', e); listMsg('Não consegui ler as entregas. Verifique as regras do Firestore.'); });
-  };
-  if(typeof firebase!=='undefined'){ firebase.auth().signInAnonymously().then(go).catch(go); } else go();
-  // atualiza só o "há X" do status a cada 20s
+  setTimeout(function(){ try{ if(mapLive){ mapLive.invalidateSize(); } renderMapLive(); }catch(_){} }, 120);
+  _unsubRast=fdb.collection('rastreio').onSnapshot(function(snap){
+    var m={}; snap.forEach(function(d){ m[d.id]=d.data()||{}; }); liveEnt=m;
+    renderEntLiveList(); renderMapLive();
+  }, function(e){ console.warn('rastreio', e); });
+  _unsubEnt=fdb.collection('entregas').onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _todas=arr;
+    renderEntLiveList(); renderMapLive();
+  }, function(e){ console.warn('entregas', e); listMsg('Não consegui ler as entregas. Verifique as regras do Firestore.'); });
   setInterval(function(){
     document.querySelectorAll('[data-when]').forEach(function(el){ el.textContent=statusInfo(el.getAttribute('data-when')).txt; });
   }, 20000);
 }
-window.addEventListener('load', iniciar);
+window.addEventListener('load', function(){
+  try{ ensureMapLive(); }catch(e){ _mapFail(); }
+  if(!FIREBASE_ON){ showLogin(); var er=$('lg-err'); if(er) er.textContent='Sem conexão com o servidor.'; return; }
+  firebase.auth().onAuthStateChanged(function(u){
+    if(u && !u.isAnonymous){ hideLogin(); iniciar(); }
+    else { showLogin(); }
+  });
+});
 </script>
 </body>
 </html>
