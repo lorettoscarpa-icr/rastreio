@@ -64,8 +64,7 @@
   .elv-empty{font-size:12.5px;color:var(--text-mute);padding:4px 2px 6px}
   .elv-acts{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
   .elv-wa{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;text-decoration:none;color:#bfe6a8;background:rgba(127,174,107,.16);border:1px solid rgba(127,174,107,.34);border-radius:9px;padding:6px 11px}
-
-  .demo-badge{position:fixed;left:10px;bottom:10px;z-index:400;font-family:var(--ff-data);font-size:10px;color:rgba(244,236,216,.5);background:rgba(20,33,13,.8);border:1px solid var(--line);border-radius:8px;padding:5px 9px;pointer-events:none}
+  .elv-msg{font-size:13px;color:var(--text-mute);text-align:center;padding:22px 10px}
 
   .ls-moto{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);font-size:16px}
   .ls-num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--gold);color:#14210d;font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
@@ -84,110 +83,89 @@
     <div id="map-live" class="ent-live-map"></div>
     <div id="ent-live-mapnote" class="ent-live-mapnote"></div>
     <div class="ent-live-sec" id="ent-live-sec">Toque em um entregador para ver a rota dele</div>
-    <div id="ent-live-list"></div>
+    <div id="ent-live-list"><div class="elv-msg">Conectando…</div></div>
   </div>
 </div>
 
-<div class="demo-badge">DEMO · dados fictícios · movimento simulado</div>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ============================================================
-   Rastreio da equipe (gestor) — versão do overlay com foco.
-   Posições SIMULADAS (sem Firebase) e dados fictícios.
+   Rastreio da equipe (gestor) — REAL, lê do Firebase.
+   Coleções: rastreio (posições ao vivo) + entregas (do dia).
    ============================================================ */
+
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCogQoTSULCdC1JhTb0IUilWAIA1itBJ8U",
+  authDomain: "loretto-scarpa-l-icr.firebaseapp.com",
+  projectId: "loretto-scarpa-l-icr",
+  storageBucket: "loretto-scarpa-l-icr.firebasestorage.app",
+  messagingSenderId: "428188657366",
+  appId: "1:428188657366:web:091e9d32ddfd712c83cb77"
+};
+var fdb=null, FIREBASE_ON=false;
+try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initializeApp(FIREBASE_CONFIG); fdb=firebase.firestore(); FIREBASE_ON=true; } }catch(e){ console.warn('firebase', e); }
 
 var WA_ICON='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.68-6.16A11.87 11.87 0 010 11.92C0 5.34 5.35 0 11.93 0a11.86 11.86 0 018.42 3.5 11.82 11.82 0 013.49 8.42c0 6.58-5.35 11.93-11.93 11.93a11.9 11.9 0 01-5.7-1.45L.06 24zM6.6 20.13l.36.21a9.9 9.9 0 005.04 1.38 9.92 9.92 0 009.91-9.9 9.85 9.85 0 00-2.9-7.01 9.84 9.84 0 00-7-2.9 9.92 9.92 0 00-9.92 9.9c0 1.9.54 3.75 1.56 5.34l.24.38-1 3.65 3.71-.95zm11.1-5.3c-.15-.25-.55-.4-1.15-.7-.6-.3-3.5-1.73-4.04-1.92-.54-.2-.94-.3-1.33.3-.4.6-1.53 1.92-1.87 2.31-.35.4-.69.45-1.28.15-.6-.3-2.5-.92-4.76-2.94-1.76-1.57-2.95-3.51-3.29-4.1-.35-.6-.04-.92.26-1.22.27-.27.6-.7.9-1.05.3-.35.4-.6.6-1 .2-.4.1-.74-.05-1.04-.15-.3-1.33-3.2-1.82-4.38-.48-1.15-.97-1-1.33-1.01l-1.14-.02c-.4 0-1.04.15-1.58.74-.54.6-2.07 2.02-2.07 4.93s2.12 5.72 2.42 6.12c.3.4 4.17 6.37 10.1 8.93 1.41.6 2.51.96 3.37 1.23 1.42.45 2.7.39 3.72.24 1.14-.17 3.5-1.43 3.99-2.81.49-1.38.49-2.56.34-2.81z"/></svg>';
 
+/* entregadores reais (id, nome, cor, tel) */
 var ENTREGADORES=[
-  {id:'gustavo', nome:'Gustavo',     cor:'#d4b45a', tel:'5562999990001'},
-  {id:'joao',    nome:'João Vitor',  cor:'#6fb0a6', tel:'5562999990002'},
-  {id:'ewald',   nome:'Ewald',       cor:'#9bbcdc', tel:'5562999990003'}
+  {id:'gustavo',nome:'Gustavo',cor:'#d4b45a',tel:'5562998563940'},
+  {id:'joao',   nome:'João',   cor:'#6fb0a6',tel:'5562992271346'},
+  {id:'ewald',  nome:'Ewald',  cor:'#c97b5a',tel:'5562982181829'},
+  {id:'gregory',nome:'Gregory',cor:'#d99a5a',tel:'5562983129321'},
+  {id:'hugo',   nome:'Hugo',   cor:'#8e9cd6',tel:'5562986218413'},
+  {id:'flavio', nome:'Flavio', cor:'#cf8aa8',tel:'5562999296060'},
+  {id:'junior', nome:'Junior', cor:'#7fb0d4',tel:'5562993741125'}
 ];
 var ENT={}; ENTREGADORES.forEach(function(e){ ENT[e.id]=e; });
 
-function lojaCoords(){ return {lat:-16.6869, lng:-49.2648}; }
+/* ===== helpers ===== */
 function $(id){ return document.getElementById(id); }
 function esc(s){ return (''+(s==null?'':s)).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
 function fmtAge(ts){
   var s=Math.max(0,Math.round((Date.now()-ts)/1000));
-  if(s<20) return 'agora mesmo';
+  if(s<25) return 'agora mesmo';
   if(s<60) return 'há '+s+'s';
   var m=Math.round(s/60);
   if(m<60) return 'há '+m+' min';
   var h=Math.floor(m/60), mm=m%60; return 'há '+h+'h'+(mm?(' '+mm+'min'):'');
 }
-function todayKey(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function dataDe(e){ return e.dia; }
 function hrTxt(e){ return e.horarioHora ? ('até '+e.horarioHora) : ''; }
 function telEnt(id){ var e=ENT[id]; return e&&e.tel?e.tel:''; }
-function _hhmm(h,m){ var d=new Date(); d.setHours(h,m||0,0,0); return d.getTime(); }
-var HOJE=todayKey();
+function _ehHoje(ts){ if(!ts) return false; var d=new Date(ts), n=new Date(); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate(); }
+function coordFrom(url){
+  if(!url) return null; var s; try{ s=decodeURIComponent(url); }catch(e){ s=url; }
+  var pats=[/[?&]q=(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/,/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]ll=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]destination=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/,/(-?\d{1,2}\.\d{4,}),\s*(-?\d{1,3}\.\d{4,})/];
+  for(var i=0;i<pats.length;i++){ var m=s.match(pats[i]); if(m) return {lat:parseFloat(m[1]), lng:parseFloat(m[2])}; }
+  return null;
+}
+function coordOf(e){ return e.coord||coordFrom(e.link); }
 
-/* entregas fictícias de HOJE */
-var entregas=[
-  {id:'g1',entregador:'gustavo',status:'em_rota', dia:HOJE,ordemManual:1,cliente:'Bruno Carvalho',bairro:'Setor Bueno',  coord:{lat:-16.7030,lng:-49.2550}},
-  {id:'g2',entregador:'gustavo',status:'em_rota', dia:HOJE,ordemManual:2,cliente:'Helena Dias',   bairro:'Setor Marista', coord:{lat:-16.7110,lng:-49.2680}, horarioTipo:'ate',horarioHora:'15:00'},
-  {id:'g3',entregador:'gustavo',status:'entregue',dia:HOJE,entregueEm:_hhmm(9,42), cliente:'Carla Mendes',bairro:'Setor Oeste', coord:{lat:-16.6950,lng:-49.2760}},
-  {id:'g4',entregador:'gustavo',status:'entregue',dia:HOJE,entregueEm:_hhmm(10,15),cliente:'Diego Rocha', bairro:'Jardim Goiás',coord:{lat:-16.7000,lng:-49.2450}},
-  {id:'j1',entregador:'joao',status:'em_rota',  dia:HOJE,ordemManual:1,cliente:'Fábio Souza',bairro:'Setor Sul', coord:{lat:-16.7150,lng:-49.2600}},
-  {id:'j2',entregador:'joao',status:'entregue', dia:HOJE,entregueEm:_hhmm(8,55), cliente:'Eva Lima', bairro:'Setor Central', coord:{lat:-16.6900,lng:-49.2555}},
-  {id:'j3',entregador:'joao',status:'nao_entregue',dia:HOJE,desfechoEm:_hhmm(11,2),cliente:'Igor Melo',bairro:'Setor Universitário',motivo:'ninguém em casa',coord:{lat:-16.7080,lng:-49.2400}},
-  {id:'e1',entregador:'ewald',status:'entregue',dia:HOJE,entregueEm:_hhmm(7,30),cliente:'Lucas Pires',bairro:'Setor Pedro Ludovico',coord:{lat:-16.7000,lng:-49.2650}},
-  {id:'e2',entregador:'ewald',status:'cancelado',dia:HOJE,desfechoEm:_hhmm(8,5),cliente:'Marina Reis',bairro:'Setor Sudoeste',motivo:'desistiu da compra',coord:{lat:-16.7050,lng:-49.2900}}
-];
+/* ===== estado vindo do Firebase ===== */
+var liveEnt={};      // posições (coleção rastreio)
+var _todas=[];       // entregas (coleção entregas)
 
-/* ===== rastreio ao vivo (SIMULADO) ===== */
-var liveEnt={}, _rastTimer=null;
-function _alvo(id){
-  var r=entregas.filter(function(e){ return e.entregador===id && e.status==='em_rota'; })
-                .sort(function(a,b){ return (a.ordemManual||9)-(b.ordemManual||9); });
-  return r.length?r[0].coord:lojaCoords();
-}
-function assinarRastreio(){
-  if(_rastTimer) return;
-  var lj=lojaCoords();
-  liveEnt['gustavo']={lat:lj.lat-0.004, lng:lj.lng-0.004, ativo:true,  atualizadoEm:Date.now()};
-  liveEnt['joao']   ={lat:lj.lat+0.003, lng:lj.lng+0.003, ativo:true,  atualizadoEm:Date.now()};
-  liveEnt['ewald']  ={lat:lj.lat,       lng:lj.lng,       ativo:false, atualizadoEm:_hhmm(8,12)}; // sem sinal: parou de transmitir 08:12
-  _passo();
-  _rastTimer=setInterval(_passo, 2500);
-}
-function _passo(){
-  ['gustavo','joao'].forEach(function(id){
-    var r=liveEnt[id]; if(!r) return;
-    var a=_alvo(id);
-    r.lat += (a.lat-r.lat)*0.16 + (Math.random()-0.5)*0.0006;
-    r.lng += (a.lng-r.lng)*0.16 + (Math.random()-0.5)*0.0006;
-    r.ativo=true; r.atualizadoEm=Date.now();
-  });
-  renderMapLive();
-  // atualiza só os horários "há X" sem reconstruir a lista inteira
-  document.querySelectorAll('[data-when]').forEach(function(el){
-    var id=el.getAttribute('data-when'); el.textContent=statusInfo(id).txt;
-  });
-}
 function posicaoViva(id){
   var r=liveEnt[id];
   if(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0) < 150000)) return {lat:r.lat, lng:r.lng};
   return null;
 }
-/* texto de status com a ÚLTIMA transmissão (ao vivo e sem sinal) */
 function statusInfo(id){
   var r=liveEnt[id];
   if(!r || r.atualizadoEm==null) return {vivo:false, txt:'sem registro hoje'};
   if(posicaoViva(id)) return {vivo:true, txt:'transmitindo · atualizado '+fmtAge(r.atualizadoEm)};
   return {vivo:false, txt:'última posição às '+fmtClock(r.atualizadoEm)+' ('+fmtAge(r.atualizadoEm)+')'};
 }
-
-/* ===== dados do dia por entregador ===== */
 function _entLiveDados(id){
-  var minhas=entregas.filter(function(e){ return e.entregador===id && dataDe(e)===HOJE; });
+  var minhas=_todas.filter(function(e){ return e.entregador===id; });
   var rota=minhas.filter(function(e){ return e.status==='em_rota'; })
     .sort(function(a,b){ return ((a.ordemManual==null?9999:a.ordemManual)-(b.ordemManual==null?9999:b.ordemManual)) || ((a.roteadoEm||0)-(b.roteadoEm||0)); });
-  // FINALIZADAS = entregues + não concluídas (item 5), em ordem de horário
-  var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0; })
+  // FINALIZADAS de HOJE = entregues + não concluídas, em ordem de horário
+  var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0 && _ehHoje(e.entregueEm||e.desfechoEm); })
     .map(function(e){ return {e:e, ok:e.status==='entregue', when:(e.entregueEm||e.desfechoEm||0)}; })
     .sort(function(a,b){ return a.when-b.when; });
   return {rota:rota, fin:fin};
@@ -197,10 +175,11 @@ function _entLiveDados(id){
 var mapLive=null, mapLiveLayer=null, _mapLiveInit=false;
 var _focoId=null, _focoKey=null, _focoLine=null;
 
+function _mapFail(){ var el=$('map-live'); if(el){ el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:18px;text-align:center;color:var(--text-mute);font-size:12.5px;line-height:1.5">Não consegui carregar o mapa agora.<br>A lista da equipe abaixo funciona normalmente.</div>'; } }
 function ensureMapLive(){
   if(_mapLiveInit){ if(mapLive) setTimeout(function(){ mapLive.invalidateSize(); },50); return; }
-  var loja=lojaCoords();
-  mapLive=L.map('map-live',{zoomControl:true}).setView([loja.lat,loja.lng],13);
+  if(typeof L==='undefined'){ _mapFail(); _mapLiveInit=true; return; }
+  mapLive=L.map('map-live',{zoomControl:true}).setView([-16.6869,-49.2648],12);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(mapLive);
   mapLiveLayer=L.layerGroup().addTo(mapLive);
   _mapLiveInit=true;
@@ -209,9 +188,8 @@ function ensureMapLive(){
 function _motoDiv(cor){ return L.divIcon({className:'lsdi',iconSize:[34,34],iconAnchor:[17,17],html:'<div class="ls-moto" style="background:'+cor+'">🛵</div>'}); }
 function _numDiv(n){ return L.divIcon({className:'lsdi',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="ls-num">'+n+'</div>'}); }
 function _doneDiv(){ return L.divIcon({className:'lsdi',iconSize:[24,24],iconAnchor:[12,12],html:'<div class="ls-done">✓</div>'}); }
-function _lojaDiv(){ return L.divIcon({className:'lsdi',iconSize:[26,26],iconAnchor:[13,13],html:'<div style="width:22px;height:22px;border-radius:50%;background:#eef0e3;border:3px solid #14210d;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>'}); }
 
-/* roteamento por rua (OSRM) — igual ao rastreio do cliente; cai p/ linha reta se falhar */
+/* rota real pela rua (OSRM público; cai na reta se falhar) */
 function rotaRuas(wps){
   try{
     var url='https://router.project-osrm.org/route/v1/driving/'+wps.map(function(p){return p.lng+','+p.lat;}).join(';')+'?overview=full&geometries=geojson';
@@ -229,88 +207,73 @@ function renderMapLive(){
 }
 function desenharTodos(){
   mapLiveLayer.clearLayers();
-  var bounds=[], loja=lojaCoords();
-  L.marker([loja.lat,loja.lng],{icon:_lojaDiv()}).addTo(mapLiveLayer).bindPopup('🏪 <b>Loretto Scarpa</b> (loja)');
-  bounds.push([loja.lat,loja.lng]);
-  var nVivo=0;
+  var bounds=[], n=0;
   ENTREGADORES.forEach(function(ent){
     var p=posicaoViva(ent.id); if(!p) return;
-    nVivo++;
+    n++;
     var d=_entLiveDados(ent.id);
-    L.marker([p.lat,p.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer)
-      .bindPopup('<b>'+esc(ent.nome)+'</b><br>🛵 '+d.rota.length+' em rota');
+    L.marker([p.lat,p.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer).bindPopup('<b>'+esc(ent.nome)+'</b><br>🛵 '+d.rota.length+' em rota');
     bounds.push([p.lat,p.lng]);
   });
   if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[42,42],maxZoom:14});
+  else if(bounds.length===1) mapLive.setView(bounds[0],14);
   var note=$('ent-live-mapnote');
-  if(note) note.textContent = nVivo ? ('🟢 '+nVivo+' '+(nVivo===1?'entregador transmitindo':'entregadores transmitindo')+' agora') : 'Nenhum entregador transmitindo agora.';
+  if(note) note.textContent = n ? ('🟢 '+n+' '+(n===1?'entregador transmitindo':'entregadores transmitindo')+' agora') : 'Nenhum entregador transmitindo agora.';
 }
 function desenharFoco(){
   mapLiveLayer.clearLayers();
   var ent=ENT[_focoId]; if(!ent) return;
   var d=_entLiveDados(_focoId);
   var pos=posicaoViva(_focoId);
-  var loja=lojaCoords();
-  var bounds=[[loja.lat,loja.lng]];
-  L.marker([loja.lat,loja.lng],{icon:_lojaDiv()}).addTo(mapLiveLayer).bindPopup('🏪 Loja');
-
-  // entregas já feitas hoje (✓)
-  d.fin.forEach(function(f){ if(f.ok && f.e.coord){ L.marker([f.e.coord.lat,f.e.coord.lng],{icon:_doneDiv()}).addTo(mapLiveLayer); bounds.push([f.e.coord.lat,f.e.coord.lng]); } });
-
-  // paradas que FALTAM (numeradas)
-  d.rota.forEach(function(e,i){ if(e.coord){ L.marker([e.coord.lat,e.coord.lng],{icon:_numDiv(i+1)}).addTo(mapLiveLayer).bindPopup((i+1)+'. <b>'+esc(e.cliente)+'</b>'); bounds.push([e.coord.lat,e.coord.lng]); } });
-
-  // waypoints da rota = posição atual + paradas restantes
-  var wps=[]; if(pos) wps.push(pos); d.rota.forEach(function(e){ if(e.coord) wps.push(e.coord); });
-  var stopsKey=d.rota.map(function(e){ return e.coord?e.coord.lat.toFixed(4)+','+e.coord.lng.toFixed(4):''; }).join(';');
+  var bounds=[];
+  d.fin.forEach(function(f){ var c=f.ok?coordOf(f.e):null; if(c){ L.marker([c.lat,c.lng],{icon:_doneDiv()}).addTo(mapLiveLayer); bounds.push([c.lat,c.lng]); } });
+  d.rota.forEach(function(e,i){ var c=coordOf(e); if(c){ L.marker([c.lat,c.lng],{icon:_numDiv(i+1)}).addTo(mapLiveLayer).bindPopup((i+1)+'. <b>'+esc(e.cliente)+'</b>'); bounds.push([c.lat,c.lng]); } });
+  var wps=[]; if(pos) wps.push(pos); d.rota.forEach(function(e){ var c=coordOf(e); if(c) wps.push(c); });
+  var stopsKey=d.rota.map(function(e){ var c=coordOf(e); return c?c.lat.toFixed(4)+','+c.lng.toFixed(4):''; }).join(';');
   if(_focoKey!==stopsKey){ _focoKey=stopsKey; _focoLine=null;
-    if(wps.length>=2) rotaRuas(wps).then(function(line){ if(line && _focoId===ent.id && _focoKey===stopsKey){ _focoLine=line; desenharFoco(); } });
+    if(wps.length>=2) rotaRuas(wps).then(function(line){ if(line && _focoId===ent.id && _focoKey===stopsKey){ _focoLine=line; if(mapLiveLayer) desenharFoco(); } });
   }
   if(wps.length>=2){
     var pts = _focoLine ? _focoLine : wps.map(function(p){ return [p.lat,p.lng]; });
     L.polyline(pts,{color:ent.cor, weight:4, opacity:.9, dashArray:_focoLine?null:'6,8'}).addTo(mapLiveLayer);
   }
   if(pos){ L.marker([pos.lat,pos.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer); bounds.push([pos.lat,pos.lng]); }
-
   if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[46,46],maxZoom:15});
-  var st=statusInfo(_focoId);
-  var note=$('ent-live-mapnote');
+  else if(bounds.length===1) mapLive.setView(bounds[0],15);
+  var st=statusInfo(_focoId), note=$('ent-live-mapnote');
   if(note) note.textContent = (st.vivo?'🟢 ':'⚪ ')+esc(ent.nome)+' · '+st.txt+' · '+(d.rota.length?(d.rota.length+' parada'+(d.rota.length>1?'s':'')+' restante'+(d.rota.length>1?'s':'')):'rota concluída');
 }
 
-/* ===== abre / fecha / foco ===== */
-function abrirEntregadores(){ assinarRastreio(); ensureMapLive(); renderEntLiveList(); setTimeout(function(){ if(mapLive) mapLive.invalidateSize(); renderMapLive(); }, 80); }
+/* ===== foco / voltar ===== */
 function selecionarFrota(id){ _focoId=id; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 '+ENT[id].nome; $('ent-live-sec').textContent='Rota em andamento'; renderEntLiveList(); renderMapLive(); var b=$('ent-live-body'); if(b) b.scrollTop=0; }
 function voltarFrota(){ _focoId=null; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 Equipe ao vivo'; $('ent-live-sec').textContent='Toque em um entregador para ver a rota dele'; renderEntLiveList(); renderMapLive(); }
 
 /* ===== lista ===== */
 function _rowsRota(d){
   return d.rota.length
-    ? d.rota.map(function(e,i){ return '<div class="elv-row"><span class="num">'+(i+1)+'</span><span class="info"><span class="cli">'+esc(e.cliente)+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'sem bairro')+((e.horarioTipo&&e.horarioHora)?' · ⏰ '+esc(hrTxt(e)):'')+'</span></span></div>'; }).join('')
+    ? d.rota.map(function(e,i){ return '<div class="elv-row"><span class="num">'+(i+1)+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'sem bairro')+((e.horarioTipo&&e.horarioHora)?' · ⏰ '+esc(hrTxt(e)):'')+'</span></span></div>'; }).join('')
     : '<div class="elv-empty">Nada em rota agora.</div>';
 }
 function _rowsFin(d){
   if(!d.fin.length) return '<div class="elv-empty">Nenhuma finalizada hoje ainda.</div>';
   return d.fin.map(function(f){
     var e=f.e, hr=f.when?fmtClock(f.when):'—';
-    if(f.ok){
-      return '<div class="elv-row"><span class="hr">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente)+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag ok">✓ entregue</span></span></div>';
-    }
+    if(f.ok) return '<div class="elv-row"><span class="hr">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag ok">✓ entregue</span></span></div>';
     var motivo = e.status==='cancelado' ? 'não comprou' : 'não entregue';
     if(e.motivo) motivo += ' · '+e.motivo;
-    return '<div class="elv-row fail"><span class="hr fail">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente)+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag fail">✕ finalizada · não deu certo — '+esc(motivo)+'</span></span></div>';
+    return '<div class="elv-row fail"><span class="hr fail">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag fail">✕ finalizada · não deu certo — '+esc(motivo)+'</span></span></div>';
   }).join('');
 }
 function focoCardHTML(id){
   var ent=ENT[id], d=_entLiveDados(id), st=statusInfo(id);
   var prox=d.rota[0];
-  var caminho = prox ? ('🛵 A caminho de <b>'+esc(prox.cliente.split(' ')[0])+'</b>'+(prox.bairro?' · '+esc(prox.bairro):'')) : '✓ Rota concluída por hoje';
+  var caminho = prox ? ('🛵 A caminho de <b>'+esc((prox.cliente||'cliente').split(' ')[0])+'</b>'+(prox.bairro?' · '+esc(prox.bairro):'')) : '✓ Rota concluída por hoje';
   var tel=telEnt(id);
   return '<button class="elv-back" onclick="voltarFrota()">‹ Ver todos</button>'
     +'<div class="elv-card foco">'
       +'<div class="elv-head" style="cursor:default">'
         +'<span class="elv-dot" style="background:'+ent.cor+'"></span>'
-        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span><span class="elv-when">'+st.txt+'</span></span>'
+        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span><span class="elv-when" data-when="'+ent.id+'">'+st.txt+'</span></span>'
         +'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>'
       +'</div>'
       +'<div class="elv-counts">'
@@ -331,7 +294,7 @@ function renderEntLiveList(){
   var dados=ENTREGADORES.map(function(ent){ return {ent:ent, vivo:!!posicaoViva(ent.id), st:statusInfo(ent.id), d:_entLiveDados(ent.id)}; });
   dados.sort(function(a,b){ return (b.vivo-a.vivo) || (b.d.rota.length-a.d.rota.length) || (b.d.fin.length-a.d.fin.length); });
   var mostra=dados.filter(function(x){ return x.vivo || x.d.rota.length || x.d.fin.length || x.st.txt!=='sem registro hoje'; });
-  if(!mostra.length) mostra=dados;
+  if(!mostra.length){ box.innerHTML='<div class="elv-msg">Ninguém transmitindo nem com entregas hoje no momento.</div>'; return; }
   box.innerHTML = mostra.map(function(o){
     var ent=o.ent, d=o.d, st=o.st;
     return '<div class="elv-card">'
@@ -349,7 +312,29 @@ function renderEntLiveList(){
   }).join('');
 }
 
-window.addEventListener('load', abrirEntregadores);
+/* ===== conexão com o Firebase ===== */
+var _unsubRast=null, _unsubEnt=null;
+function listMsg(t){ var b=$('ent-live-list'); if(b) b.innerHTML='<div class="elv-msg">'+esc(t)+'</div>'; }
+function iniciar(){
+  try{ ensureMapLive(); }catch(e){ _mapFail(); }
+  if(!FIREBASE_ON || !fdb){ listMsg('Sem conexão com o servidor.'); return; }
+  var go=function(){
+    _unsubRast=fdb.collection('rastreio').onSnapshot(function(snap){
+      var m={}; snap.forEach(function(d){ m[d.id]=d.data()||{}; }); liveEnt=m;
+      renderEntLiveList(); renderMapLive();
+    }, function(e){ console.warn('rastreio', e); });
+    _unsubEnt=fdb.collection('entregas').onSnapshot(function(snap){
+      var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _todas=arr;
+      renderEntLiveList(); renderMapLive();
+    }, function(e){ console.warn('entregas', e); listMsg('Não consegui ler as entregas. Verifique as regras do Firestore.'); });
+  };
+  if(typeof firebase!=='undefined'){ firebase.auth().signInAnonymously().then(go).catch(go); } else go();
+  // atualiza só o "há X" do status a cada 20s
+  setInterval(function(){
+    document.querySelectorAll('[data-when]').forEach(function(el){ el.textContent=statusInfo(el.getAttribute('data-when')).txt; });
+  }, 20000);
+}
+window.addEventListener('load', iniciar);
 </script>
 </body>
 </html>
