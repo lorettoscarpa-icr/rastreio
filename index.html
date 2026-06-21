@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Rastreio da equipe · Loretto Scarpa</title>
+<title>Entregadores ao vivo · Loretto Scarpa</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -34,8 +34,8 @@
   .elv-head:hover{background:var(--surface-2)}
   .elv-dot{width:13px;height:13px;border-radius:50%;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
   .elv-id{flex:1;min-width:0}
-  .elv-name{font-family:var(--ff-display);font-size:17px;color:var(--text);font-weight:600;line-height:1.15}
-  .elv-when{font-size:11px;color:var(--text-mute);margin-top:2px}
+  .elv-name{display:block;font-family:var(--ff-display);font-size:17px;color:var(--text);font-weight:600;line-height:1.15}
+  .elv-when{display:block;font-size:11px;color:var(--text-mute);margin-top:3px}
   .elv-live{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;flex:none}
   .elv-live.on{color:#bfe6a8;background:rgba(127,174,107,.2)}
   .elv-live.off{color:var(--text-mute);background:rgba(255,255,255,.05)}
@@ -70,34 +70,10 @@
   .ls-num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--gold);color:#14210d;font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
   .ls-done{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#7dd08f;color:#0c2c1a;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
-  .login{position:fixed;inset:0;z-index:500;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px}
-  .login-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 22px}
-  .login-card h1{font-family:var(--ff-display);color:var(--gold-lt);font-size:22px;margin:0 0 4px;font-weight:600}
-  .login-card p{color:var(--text-soft);font-size:13px;margin:0 0 18px;line-height:1.5}
-  .login-card label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mute);margin:0 0 5px}
-  .login-card input{width:100%;padding:11px 12px;margin-bottom:13px;background:var(--bg2);border:1px solid var(--line-strong);border-radius:10px;color:var(--text);font-family:var(--ff-eyebrow);font-size:15px}
-  .login-card input:focus{outline:none;border-color:var(--gold)}
-  .login-btn{width:100%;padding:12px;background:var(--gold);color:var(--ink);border:0;border-radius:11px;font-family:var(--ff-eyebrow);font-weight:600;font-size:15px;cursor:pointer}
-  .login-btn:disabled{opacity:.6}
-  .login-err{color:#e6b0a8;font-size:12.5px;margin-top:10px;min-height:16px}
-
   @media(max-width:560px){ .ent-live-map{height:240px} }
 </style>
 </head>
 <body>
-
-<div id="login" class="login">
-  <div class="login-card">
-    <h1>Rastreio da equipe</h1>
-    <p>Acesso restrito — entre com sua conta da Loretto Scarpa.</p>
-    <label>E-mail</label>
-    <input id="lg-email" type="email" value="lorettoscarpa@gmail.com" autocomplete="username">
-    <label>Senha</label>
-    <input id="lg-pass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()">
-    <button class="login-btn" id="lg-btn" onclick="entrar()">Entrar</button>
-    <div class="login-err" id="lg-err"></div>
-  </div>
-</div>
 
 <div id="ent-live-ov" class="ent-live-ov">
   <div class="ent-live-head">
@@ -117,8 +93,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ============================================================
-   Rastreio da equipe (gestor) — REAL, lê do Firebase.
-   Coleções: rastreio (posições ao vivo) + entregas (do dia).
+   Entregadores ao vivo (frota) — abre sem login, igual ao antigo.
+   Lê: rastreio (posições) + entregas POR ENTREGADOR (consultas leves).
    ============================================================ */
 
 var FIREBASE_CONFIG = {
@@ -134,7 +110,7 @@ try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initi
 
 var WA_ICON='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.68-6.16A11.87 11.87 0 010 11.92C0 5.34 5.35 0 11.93 0a11.86 11.86 0 018.42 3.5 11.82 11.82 0 013.49 8.42c0 6.58-5.35 11.93-11.93 11.93a11.9 11.9 0 01-5.7-1.45L.06 24zM6.6 20.13l.36.21a9.9 9.9 0 005.04 1.38 9.92 9.92 0 009.91-9.9 9.85 9.85 0 00-2.9-7.01 9.84 9.84 0 00-7-2.9 9.92 9.92 0 00-9.92 9.9c0 1.9.54 3.75 1.56 5.34l.24.38-1 3.65 3.71-.95zm11.1-5.3c-.15-.25-.55-.4-1.15-.7-.6-.3-3.5-1.73-4.04-1.92-.54-.2-.94-.3-1.33.3-.4.6-1.53 1.92-1.87 2.31-.35.4-.69.45-1.28.15-.6-.3-2.5-.92-4.76-2.94-1.76-1.57-2.95-3.51-3.29-4.1-.35-.6-.04-.92.26-1.22.27-.27.6-.7.9-1.05.3-.35.4-.6.6-1 .2-.4.1-.74-.05-1.04-.15-.3-1.33-3.2-1.82-4.38-.48-1.15-.97-1-1.33-1.01l-1.14-.02c-.4 0-1.04.15-1.58.74-.54.6-2.07 2.02-2.07 4.93s2.12 5.72 2.42 6.12c.3.4 4.17 6.37 10.1 8.93 1.41.6 2.51.96 3.37 1.23 1.42.45 2.7.39 3.72.24 1.14-.17 3.5-1.43 3.99-2.81.49-1.38.49-2.56.34-2.81z"/></svg>';
 
-/* entregadores reais (id, nome, cor, tel) */
+/* entregadores reais (id, nome, cor, tel) — a lista que será consultada */
 var ENTREGADORES=[
   {id:'gustavo',nome:'Gustavo',cor:'#d4b45a',tel:'5562998563940'},
   {id:'joao',   nome:'João',   cor:'#6fb0a6',tel:'5562992271346'},
@@ -150,13 +126,14 @@ var ENT={}; ENTREGADORES.forEach(function(e){ ENT[e.id]=e; });
 function $(id){ return document.getElementById(id); }
 function esc(s){ return (''+(s==null?'':s)).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function fmtClock(ts){ return new Date(ts).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
-function fmtAge(ts){
+function fmtAgeCurto(ts){
   var s=Math.max(0,Math.round((Date.now()-ts)/1000));
-  if(s<25) return 'agora mesmo';
-  if(s<60) return 'há '+s+'s';
+  if(s<60) return 'agora';
   var m=Math.round(s/60);
-  if(m<60) return 'há '+m+' min';
-  var h=Math.floor(m/60), mm=m%60; return 'há '+h+'h'+(mm?(' '+mm+'min'):'');
+  if(m<60) return 'há '+m+'min';
+  var h=Math.round(m/60);
+  if(h<24) return 'há '+h+'h';
+  return 'há '+Math.round(h/24)+'d';
 }
 function hrTxt(e){ return e.horarioHora ? ('até '+e.horarioHora) : ''; }
 function telEnt(id){ var e=ENT[id]; return e&&e.tel?e.tel:''; }
@@ -171,7 +148,7 @@ function coordOf(e){ return e.coord||coordFrom(e.link); }
 
 /* ===== estado vindo do Firebase ===== */
 var liveEnt={};      // posições (coleção rastreio)
-var _todas=[];       // entregas (coleção entregas)
+var _porEnt={};      // entregas de cada entregador (consulta where entregador==id)
 
 function posicaoViva(id){
   var r=liveEnt[id];
@@ -180,12 +157,12 @@ function posicaoViva(id){
 }
 function statusInfo(id){
   var r=liveEnt[id];
-  if(!r || r.atualizadoEm==null) return {vivo:false, txt:'sem registro hoje'};
-  if(posicaoViva(id)) return {vivo:true, txt:'transmitindo · atualizado '+fmtAge(r.atualizadoEm)};
-  return {vivo:false, txt:'última posição às '+fmtClock(r.atualizadoEm)+' ('+fmtAge(r.atualizadoEm)+')'};
+  if(!r || r.atualizadoEm==null) return {vivo:false, txt:'sem posição hoje'};
+  if(posicaoViva(id)) return {vivo:true, txt:'atualizado '+fmtAgeCurto(r.atualizadoEm)};
+  return {vivo:false, txt:'última '+fmtAgeCurto(r.atualizadoEm)};
 }
 function _entLiveDados(id){
-  var minhas=_todas.filter(function(e){ return e.entregador===id; });
+  var minhas=_porEnt[id]||[];
   var rota=minhas.filter(function(e){ return e.status==='em_rota'; })
     .sort(function(a,b){ return ((a.ordemManual==null?9999:a.ordemManual)-(b.ordemManual==null?9999:b.ordemManual)) || ((a.roteadoEm||0)-(b.roteadoEm||0)); });
   // FINALIZADAS de HOJE = entregues + não concluídas, em ordem de horário
@@ -317,8 +294,8 @@ function renderEntLiveList(){
   if(_focoId){ box.innerHTML=focoCardHTML(_focoId); return; }
   var dados=ENTREGADORES.map(function(ent){ return {ent:ent, vivo:!!posicaoViva(ent.id), st:statusInfo(ent.id), d:_entLiveDados(ent.id)}; });
   dados.sort(function(a,b){ return (b.vivo-a.vivo) || (b.d.rota.length-a.d.rota.length) || (b.d.fin.length-a.d.fin.length); });
-  var mostra=dados.filter(function(x){ return x.vivo || x.d.rota.length || x.d.fin.length || x.st.txt!=='sem registro hoje'; });
-  if(!mostra.length){ box.innerHTML='<div class="elv-msg">Ninguém transmitindo nem com entregas hoje no momento.</div>'; return; }
+  var mostra=dados.filter(function(x){ return x.d.rota.length>0 || x.d.fin.length>0; });
+  if(!mostra.length){ box.innerHTML='<div class="elv-msg">Nenhum entregador com entregas hoje no momento.</div>'; return; }
   box.innerHTML = mostra.map(function(o){
     var ent=o.ent, d=o.d, st=o.st;
     return '<div class="elv-card">'
@@ -336,48 +313,35 @@ function renderEntLiveList(){
   }).join('');
 }
 
-/* ===== conexão / login ===== */
-var _unsubRast=null, _unsubEnt=null, _started=false;
+/* ===== conexão (abre sem login, igual ao antigo) ===== */
+var _unsubRast=null, _unsubEnt={}, _started=false;
 function listMsg(t){ var b=$('ent-live-list'); if(b) b.innerHTML='<div class="elv-msg">'+esc(t)+'</div>'; }
-function showLogin(){ var l=$('login'); if(l) l.style.display='flex'; }
-function hideLogin(){ var l=$('login'); if(l) l.style.display='none'; }
-function entrar(){
-  var em=(($('lg-email')||{}).value||'').trim(), pw=($('lg-pass')||{}).value||'';
-  var btn=$('lg-btn'), err=$('lg-err'); if(err) err.textContent='';
-  if(!em||!pw){ if(err) err.textContent='Preencha e-mail e senha.'; return; }
-  if(!FIREBASE_ON){ if(err) err.textContent='Sem conexão com o servidor.'; return; }
-  if(btn){ btn.disabled=true; btn.textContent='Entrando…'; }
-  firebase.auth().signInWithEmailAndPassword(em,pw).catch(function(e){
-    if(btn){ btn.disabled=false; btn.textContent='Entrar'; }
-    var c=(e&&e.code)||'';
-    if(err) err.textContent = /wrong-password|invalid-credential|invalid-login|user-not-found/.test(c) ? 'E-mail ou senha incorretos.'
-      : /too-many-requests/.test(c) ? 'Muitas tentativas. Aguarde um pouco.'
-      : /invalid-email/.test(c) ? 'E-mail inválido.' : 'Não consegui entrar agora.';
-  });
-}
 function iniciar(){
   if(_started) return; _started=true;
   if(!FIREBASE_ON || !fdb){ listMsg('Sem conexão com o servidor.'); return; }
-  setTimeout(function(){ try{ if(mapLive){ mapLive.invalidateSize(); } renderMapLive(); }catch(_){} }, 120);
-  _unsubRast=fdb.collection('rastreio').onSnapshot(function(snap){
-    var m={}; snap.forEach(function(d){ m[d.id]=d.data()||{}; }); liveEnt=m;
-    renderEntLiveList(); renderMapLive();
-  }, function(e){ console.warn('rastreio', e); });
-  _unsubEnt=fdb.collection('entregas').onSnapshot(function(snap){
-    var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _todas=arr;
-    renderEntLiveList(); renderMapLive();
-  }, function(e){ console.warn('entregas', e); listMsg('Não consegui ler as entregas. Verifique as regras do Firestore.'); });
+  var sub=function(){
+    // posições ao vivo (coleção rastreio) — leitura leve, como o antigo
+    _unsubRast=fdb.collection('rastreio').onSnapshot(function(snap){
+      var m={}; snap.forEach(function(d){ m[d.id]=d.data()||{}; }); liveEnt=m;
+      renderEntLiveList(); renderMapLive();
+    }, function(e){ console.warn('rastreio', e); });
+    // entregas de cada entregador — uma consulta pequena por pessoa (sem "ler tudo")
+    ENTREGADORES.forEach(function(ent){
+      _unsubEnt[ent.id]=fdb.collection('entregas').where('entregador','==',ent.id).onSnapshot(function(snap){
+        var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _porEnt[ent.id]=arr;
+        renderEntLiveList(); renderMapLive();
+      }, function(e){ console.warn('entregas '+ent.id, e); });
+    });
+  };
+  if(typeof firebase!=='undefined'){ firebase.auth().signInAnonymously().then(sub).catch(sub); } else sub();
+  // atualiza só o "há X" do status a cada 20s
   setInterval(function(){
     document.querySelectorAll('[data-when]').forEach(function(el){ el.textContent=statusInfo(el.getAttribute('data-when')).txt; });
   }, 20000);
 }
 window.addEventListener('load', function(){
   try{ ensureMapLive(); }catch(e){ _mapFail(); }
-  if(!FIREBASE_ON){ showLogin(); var er=$('lg-err'); if(er) er.textContent='Sem conexão com o servidor.'; return; }
-  firebase.auth().onAuthStateChanged(function(u){
-    if(u && !u.isAnonymous){ hideLogin(); iniciar(); }
-    else { showLogin(); }
-  });
+  iniciar();
 });
 </script>
 </body>
