@@ -690,7 +690,7 @@ function desenharFrotaFoco(){
   // estático = entregues(✓) + paradas(nº) + linha; NÃO depende da posição viva → não pisca a cada GPS
   const sig = feitasKey+'#'+stopsKey+'#'+(temLinha?'L':(ehDemo?('D'+_rotaKey(wp)):'r'));
   estatico(sig, ()=>{
-    feitas.forEach(s=>{ if(s.coord && s.ok!==false) L.marker([s.coord.lat,s.coord.lng],{icon:_doneIcon()}).addTo(_trackLayer); });
+    feitas.forEach(s=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_doneIcon()}).addTo(_trackLayer); });
     stops.forEach((s,i)=>{ if(s.coord) L.marker([s.coord.lat,s.coord.lng],{icon:_numIcon(i+1)}).addTo(_trackLayer); });
     if(wp.length>=2){
       if(temLinha) L.polyline(_focoLine,{color:e.cor,weight:4,opacity:.85}).addTo(_trackLayer);
@@ -717,7 +717,7 @@ function desenharFrotaFoco(){
   let html='<div class="frota-row" onclick="voltarFrota()" style="cursor:pointer"><span class="rnome" style="color:var(--gold-lt)">‹ Ver todos</span><span class="rstat '+(viva?'viva':'off')+'">'+statusTxt+'</span></div>';
   html+='<div class="frota-row" style="background:rgba(212,180,90,.07)"><span class="rnome" style="color:var(--gold-lt)">'+caminho+'</span></div>';
   html+='<div class="frota-row"><span class="rnome" style="font-size:12.5px;color:var(--text-soft)">✓ '+nFeitas+' concluída'+(nFeitas===1?'':'s')+'  ·  '+nFaltam+' restante'+(nFaltam===1?'':'s')+'</span></div>';
-  feitas.forEach(s=>{ if(s.ok!==false){ html+='<div class="frota-row"><span class="rdot" style="background:#7dd08f;opacity:.55"></span><span class="rnome" style="color:var(--text-mute);text-decoration:line-through">'+(s.cliente||'cliente')+'</span><span class="rstat off">entregue</span></div>'; } else { html+='<div class="frota-row"><span class="rdot" style="background:#e06a52;opacity:.6"></span><span class="rnome" style="color:var(--text-soft)">'+(s.cliente||'cliente')+'</span><span class="rstat off" style="color:#e6a99a">✕ '+(s.motivo||'não deu certo')+'</span></div>'; } });
+  feitas.forEach(s=>{ html+='<div class="frota-row"><span class="rdot" style="background:#7dd08f;opacity:.55"></span><span class="rnome" style="color:var(--text-mute);text-decoration:line-through">'+(s.cliente||'cliente')+'</span><span class="rstat off">entregue</span></div>'; });
   stops.forEach((s,i)=>{ html+='<div class="frota-row"><span class="rdot" style="background:'+e.cor+'"></span><span class="rnome">'+(i+1)+'. '+(s.cliente||'cliente')+'</span>'+(i===0?'<span class="rstat viva">próxima</span>':'')+'</div>'; });
   const list=$('frota-list'); if(list) list.innerHTML=html;
   const t=$('track-title'); if(t) t.textContent=e.nome+'  ·  '+nFeitas+'/'+(nFeitas+nFaltam)+' entregue'+((nFeitas+nFaltam)===1?'':'s');
@@ -737,8 +737,7 @@ function selecionarFrota(id){
       const pend=[], feitas=[];
       snap.forEach(doc=>{ const x=doc.data()||{};
         if(x.status==='em_rota'){ pend.push({cliente:x.cliente||'',coord:coordOf(x),ordem:(typeof x.ordemManual==='number'?x.ordemManual:9999),roteadoEm:x.roteadoEm||0}); }
-        else if(x.status==='entregue' && _ehHoje(x.entregueEm||x.desfechoEm)){ feitas.push({cliente:x.cliente||'',coord:coordOf(x),quando:x.entregueEm||x.desfechoEm||0,ok:true}); }
-        else if((x.status==='nao_entregue'||x.status==='cancelado') && _ehHoje(x.entregueEm||x.desfechoEm)){ feitas.push({cliente:x.cliente||'',coord:coordOf(x),quando:x.entregueEm||x.desfechoEm||0,ok:false,motivo:(x.status==='cancelado'?'não comprou':'não entregue')+(x.motivo?' · '+x.motivo:'')}); }
+        else if(x.status==='entregue' && _ehHoje(x.entregueEm||x.desfechoEm)){ feitas.push({cliente:x.cliente||'',coord:coordOf(x),quando:x.entregueEm||x.desfechoEm||0}); }
       });
       pend.sort((a,b)=>(a.ordem-b.ordem)||(a.roteadoEm-b.roteadoEm));
       feitas.sort((a,b)=>(a.quando-b.quando));
