@@ -138,6 +138,10 @@ function fmtAgeCurto(ts){
 function hrTxt(e){ return e.horarioHora ? ('até '+e.horarioHora) : ''; }
 function telEnt(id){ var e=ENT[id]; return e&&e.tel?e.tel:''; }
 function _ehHoje(ts){ if(!ts) return false; var d=new Date(ts), n=new Date(); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth()&&d.getDate()===n.getDate(); }
+function _hojeKey(){ var n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
+function _finalStamp(e){ return Math.max(e.entregueEm||0, e.desfechoEm||0); }
+function _reabreStamp(e){ return Math.max(e.reabertoEm||0, e.reagendadaEm||0); }
+function _finalizadaE(e){ var fs=_finalStamp(e); return fs>0 && _reabreStamp(e)<=fs; }
 function coordFrom(url){
   if(!url) return null; var s; try{ s=decodeURIComponent(url); }catch(e){ s=url; }
   var pats=[/[?&]q=(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/,/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]ll=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/[?&]destination=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/,/!3d(-?\d{1,2}\.\d+)!4d(-?\d{1,3}\.\d+)/,/(-?\d{1,2}\.\d{4,}),\s*(-?\d{1,3}\.\d{4,})/];
@@ -163,7 +167,7 @@ function statusInfo(id){
 }
 function _entLiveDados(id){
   var minhas=_porEnt[id]||[];
-  var rota=minhas.filter(function(e){ return e.status==='em_rota'; })
+  var rota=minhas.filter(function(e){ return e.status==='em_rota' && !_finalizadaE(e) && (!e.dataEntrega || e.dataEntrega <= _hojeKey()); })
     .sort(function(a,b){ return ((a.ordemManual==null?9999:a.ordemManual)-(b.ordemManual==null?9999:b.ordemManual)) || ((a.roteadoEm||0)-(b.roteadoEm||0)); });
   // FINALIZADAS de HOJE = entregues + não concluídas, em ordem de horário
   var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0 && _ehHoje(e.entregueEm||e.desfechoEm); })
