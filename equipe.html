@@ -159,6 +159,13 @@ function posicaoViva(id){
   if(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0) < 150000)) return {lat:r.lat, lng:r.lng};
   return null;
 }
+function posicaoUltima(id){       // última posição conhecida (mesmo sem sinal) — só de hoje
+  var r=liveEnt[id];
+  if(!(r && r.lat!=null && r.atualizadoEm)) return null;
+  if(!_ehHoje(r.atualizadoEm)) return null;
+  var age=Date.now()-(r.atualizadoEm||0);
+  return {lat:r.lat, lng:r.lng, fresca: age<150000, min: Math.floor(age/60000), atualizadoEm:r.atualizadoEm};
+}
 function statusInfo(id){
   var r=liveEnt[id];
   if(!r || r.atualizadoEm==null) return {vivo:false, txt:'sem posição hoje'};
@@ -190,7 +197,8 @@ function ensureMapLive(){
   _mapLiveInit=true;
   setTimeout(function(){ mapLive.invalidateSize(); },60);
 }
-function _motoDiv(cor){ return L.divIcon({className:'lsdi',iconSize:[34,34],iconAnchor:[17,17],html:'<div class="ls-moto" style="background:'+cor+'">🛵</div>'}); }
+function _motoDiv(cor, fresca){ var ex = fresca===false ? 'opacity:.5;filter:grayscale(.4);border:2px dashed rgba(255,255,255,.6);box-sizing:border-box' : ''; return L.divIcon({className:'lsdi',iconSize:[34,34],iconAnchor:[17,17],html:'<div class="ls-moto" style="background:'+cor+';'+ex+'">🛵</div>'}); }
+function _ageTxt(min){ if(min<1) return 'agora mesmo'; if(min<60) return 'há '+min+' min'; var h=Math.floor(min/60); return 'há '+h+'h'+(min%60?(' '+(min%60)+'min'):''); }
 function _numDiv(n){ return L.divIcon({className:'lsdi',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="ls-num">'+n+'</div>'}); }
 function _doneDiv(){ return L.divIcon({className:'lsdi',iconSize:[24,24],iconAnchor:[12,12],html:'<div class="ls-done">✓</div>'}); }
 
@@ -212,24 +220,28 @@ function renderMapLive(){
 }
 function desenharTodos(){
   mapLiveLayer.clearLayers();
-  var bounds=[], n=0;
+  var bounds=[], n=0, nVivo=0;
   ENTREGADORES.forEach(function(ent){
-    var p=posicaoViva(ent.id); if(!p) return;
-    n++;
+    var p=posicaoUltima(ent.id); if(!p) return;
+    n++; if(p.fresca) nVivo++;
     var d=_entLiveDados(ent.id);
-    L.marker([p.lat,p.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer).bindPopup('<b>'+esc(ent.nome)+'</b><br>🛵 '+d.rota.length+' em rota');
+    var pop='<b>'+esc(ent.nome)+'</b><br>🛵 '+d.rota.length+' em rota'+(p.fresca?'':'<br>⚪ última posição '+_ageTxt(p.min));
+    L.marker([p.lat,p.lng],{icon:_motoDiv(ent.cor, p.fresca)}).addTo(mapLiveLayer).bindPopup(pop);
     bounds.push([p.lat,p.lng]);
   });
   if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[42,42],maxZoom:14});
   else if(bounds.length===1) mapLive.setView(bounds[0],14);
   var note=$('ent-live-mapnote');
-  if(note) note.textContent = n ? ('🟢 '+n+' '+(n===1?'entregador transmitindo':'entregadores transmitindo')+' agora') : 'Nenhum entregador transmitindo agora.';
+  if(note){
+    if(!n){ note.textContent='Nenhuma posição registrada hoje.'; }
+    else { var partes=[]; if(nVivo) partes.push('🟢 '+nVivo+' transmitindo ao vivo'); if(n-nVivo) partes.push('⚪ '+(n-nVivo)+' na última posição'); note.textContent=partes.join('  ·  '); }
+  }
 }
 function desenharFoco(){
   mapLiveLayer.clearLayers();
   var ent=ENT[_focoId]; if(!ent) return;
   var d=_entLiveDados(_focoId);
-  var pos=posicaoViva(_focoId);
+  var pos=posicaoUltima(_focoId);
   var bounds=[];
   d.fin.forEach(function(f){ var c=f.ok?coordOf(f.e):null; if(c){ L.marker([c.lat,c.lng],{icon:_doneDiv()}).addTo(mapLiveLayer); bounds.push([c.lat,c.lng]); } });
   d.rota.forEach(function(e,i){ var c=coordOf(e); if(c){ L.marker([c.lat,c.lng],{icon:_numDiv(i+1)}).addTo(mapLiveLayer).bindPopup((i+1)+'. <b>'+esc(e.cliente)+'</b>'); bounds.push([c.lat,c.lng]); } });
@@ -242,7 +254,7 @@ function desenharFoco(){
     var pts = _focoLine ? _focoLine : wps.map(function(p){ return [p.lat,p.lng]; });
     L.polyline(pts,{color:ent.cor, weight:4, opacity:.9, dashArray:_focoLine?null:'6,8'}).addTo(mapLiveLayer);
   }
-  if(pos){ L.marker([pos.lat,pos.lng],{icon:_motoDiv(ent.cor)}).addTo(mapLiveLayer); bounds.push([pos.lat,pos.lng]); }
+  if(pos){ L.marker([pos.lat,pos.lng],{icon:_motoDiv(ent.cor, pos.fresca)}).addTo(mapLiveLayer).bindPopup('<b>'+esc(ent.nome)+'</b>'+(pos.fresca?'<br>🟢 ao vivo':'<br>⚪ última posição '+_ageTxt(pos.min))); bounds.push([pos.lat,pos.lng]); }
   if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[46,46],maxZoom:15});
   else if(bounds.length===1) mapLive.setView(bounds[0],15);
   var st=statusInfo(_focoId), note=$('ent-live-mapnote');
