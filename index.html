@@ -170,7 +170,7 @@
     <div id="frota-list" style="display:none"></div>
   </div>
 </div>
-<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v30</div>
+<div style="position:fixed;left:6px;bottom:4px;font-size:9px;color:rgba(248,243,230,.25);font-family:monospace;z-index:9;pointer-events:none;letter-spacing:.5px">rastreio v31</div>
 <div id="ent-ov"><div class="ent-ov-card">
   <div class="lg">LS</div>
   <div class="ent-ov-h" id="ent-ov-h">Compartilhar localização</div>
@@ -492,9 +492,13 @@ function _posicaoNaRota(meuId){           // usa _trackRota (já só em_rota, or
 }
 function _previsaoChegada(viva, meuId){    // estimativa sequencial pela ordem da rota até a minha entrega
   const arr=_trackRota||[]; if(!arr.length) return null;
-  let cur = viva || (arr[0] && arr[0].coord) || null; if(!cur) return null;
+  let cur = viva || (arr.find(s=>s && s.coord)||{}).coord || null;
   let t=Date.now();
-  for(const s of arr){ if(s.coord){ t += legMin(cur, s.coord)*60000 + 2*60000; cur=s.coord; } if(String(s.id)===String(meuId)) return t; }
+  for(const s of arr){
+    if(s.coord && cur){ t += legMin(cur, s.coord)*60000 + 2*60000; cur=s.coord; }
+    else { t += 8*60000; }                 // parada sem coordenada: estima ~8 min, mas nunca trava a previsão
+    if(String(s.id)===String(meuId)) return t;
+  }
   return t;
 }
 function atualizarRastreioCliente(){
