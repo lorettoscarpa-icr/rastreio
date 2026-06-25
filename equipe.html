@@ -167,7 +167,7 @@ function statusInfo(id){
 }
 function _entLiveDados(id){
   var minhas=_porEnt[id]||[];
-  var rota=minhas.filter(function(e){ return e.status==='em_rota' && !_finalizadaE(e) && (!e.dataEntrega || e.dataEntrega <= _hojeKey()); })
+  var rota=minhas.filter(function(e){ return e.status==='em_rota' && !_finalizadaE(e) && (!e.dataEntrega || e.dataEntrega === _hojeKey()); })
     .sort(function(a,b){ return ((a.ordemManual==null?9999:a.ordemManual)-(b.ordemManual==null?9999:b.ordemManual)) || ((a.roteadoEm||0)-(b.roteadoEm||0)); });
   // FINALIZADAS de HOJE = entregues + não concluídas, em ordem de horário
   var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0 && _ehHoje(e.entregueEm||e.desfechoEm); })
