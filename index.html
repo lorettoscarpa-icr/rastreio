@@ -60,6 +60,8 @@
   @keyframes motoping{0%{transform:scale(.45);opacity:.85}100%{transform:scale(1.7);opacity:0}}
   .track-moto-dot{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e7cd84,var(--gold));border:2px solid #fffdf6;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 9px rgba(0,0,0,.55)}
   .track-home-badge{position:absolute;left:-16px;top:-32px;width:32px;height:32px;border-radius:50% 50% 50% 2px;transform:rotate(-45deg);background:var(--surface-2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
+  .track-parada{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:12.5px;font-weight:700;color:#1a1c14;background:var(--gold);border:2px solid rgba(0,0,0,.35);box-shadow:0 2px 6px rgba(0,0,0,.4)}
   .track-home-badge>span{transform:rotate(45deg);font-size:15px}
   .track-num{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:2px solid var(--gold);color:var(--gold-lt);font-family:var(--ff-body);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 9px rgba(0,0,0,.5)}
   .track-card{position:relative;z-index:3;background:linear-gradient(180deg,var(--surface),var(--surface-2));border-top:1px solid var(--line-strong);border-radius:18px 18px 0 0;padding:18px 20px 24px;text-align:left;box-shadow:0 -16px 34px -8px rgba(0,0,0,.5)}
@@ -105,20 +107,6 @@
   .fila .fnum{flex:none;font-family:var(--ff-grand);font-weight:700;font-size:34px;line-height:.9;color:var(--gold-lt)}
   .fila .ftx{font-size:13px;line-height:1.45;color:var(--text-soft)}
   .fila .ftx b{color:var(--text);font-weight:600}
-  /* a rota até o cliente: mesma linguagem do card da fila */
-  .track-rota{display:none;margin-top:12px;padding:13px 14px;border:1px solid var(--line-strong);border-radius:13px;background:rgba(255,255,255,.03)}
-  .track-rota.on{display:block}
-  .rt-h1{font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--gold-lt);margin-bottom:10px}
-  .rt-list{display:flex;flex-direction:column;gap:2px}
-  .rt-item{display:flex;align-items:center;gap:11px;padding:7px 8px;border-radius:9px}
-  .rt-item .rt-n{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    font-size:11.5px;font-weight:700;background:rgba(255,255,255,.07);color:var(--text-soft)}
-  .rt-item .rt-t{flex:1;min-width:0;font-size:13px;color:var(--text-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rt-item .rt-h{flex:none;font-size:12.5px;color:var(--text-mute);font-variant-numeric:tabular-nums}
-  .rt-item.eu{background:rgba(212,180,90,.13);border:1px solid rgba(212,180,90,.4)}
-  .rt-item.eu .rt-n{background:var(--gold);color:#1a1c14}
-  .rt-item.eu .rt-t,.rt-item.eu .rt-h{color:var(--text);font-weight:600}
-  .rt-nota{margin-top:9px;font-size:11px;line-height:1.45;color:var(--text-mute)}
   .track-sub{font-size:13.5px;color:var(--text-soft);margin-top:11px;line-height:1.5}
   .track-sub b{color:var(--text)}
   .falar-modal{background:var(--surface);border:1px solid var(--line-strong);border-radius:18px;padding:22px;width:min(360px,92vw);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);margin:auto}
@@ -178,7 +166,6 @@
     <div class="track-st" id="track-st">Carregando…</div>
     <div class="track-eta" id="track-eta"></div>
     <div class="fila" id="track-fila"></div>
-    <div class="track-rota" id="track-rota"></div>
     <div class="track-sub" id="track-sub"></div>
     <div class="track-steps" id="track-steps"></div>
     <div class="track-actions" id="track-actions"></div>
@@ -256,6 +243,7 @@ let _trackMap=null, _trackLayer=null, _trackEntDoc=null, _ultEntrega=null, _trac
 let _trackRota=[], _meuId=null, _trackRotaUnsub=null;   // rota do entregador (p/ saber se a minha entrega é a próxima)
 const _homeIcon = ()=>L.divIcon({html:'<div class="track-home-badge"><span>🏠</span></div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 const _motoIcon = ()=>L.divIcon({html:'<div class="track-moto-halo"></div><div class="track-moto-dot">🏍️</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
+const _paradaIcon = (n)=>L.divIcon({html:'<div class="track-parada">'+n+'</div>',className:'track-divicon',iconSize:[0,0],iconAnchor:[0,0]});
 /* ===== marcadores que DESLIZAM (em vez de redesenhar tudo a cada posição) ===== */
 let _motos={}, _cena=null, _staticSig=null, _fitPend=false;
 function _slideTo(M,to){
@@ -425,6 +413,42 @@ function desenharTrack(dest, ent){
   if(dest && ent){ try{ const b=_trackMap.getBounds(); if(!b.contains([ent.lat,ent.lng]) || !b.contains([dest.lat,dest.lng])) _fitPend=true; }catch(_){} }  // reenquadra p/ mostrar entregador + cliente quando algum sai da tela
   enquadrar(pts);
 }
+/* Rota do entregador ATÉ o cliente, desenhada no mapa — mesma leitura que o gestor tem
+   nos entregadores ao vivo. Mostra a moto, as paradas numeradas que vêm ANTES dele e a
+   linha até a casa. Não mostra o que já foi entregue nem o que vem depois dele: o cliente
+   só precisa entender o que falta pra chegar até ele. */
+function desenharTrackFila(dest, ent, paradas){
+  trackEnsureMap(); if(!_trackMap||!_trackLayer) return;
+  cenaSet('cli'); _cliPolys();
+  const pts=[];
+  const ps=(paradas||[]).filter(c=>c && isFinite(c.lat) && isFinite(c.lng));
+  const destK = dest? dest.lat.toFixed(5)+','+dest.lng.toFixed(5):'';
+  const psK = ps.map(c=>c.lat.toFixed(4)+','+c.lng.toFixed(4)).join(';');
+  estatico('fila:'+destK+'|'+psK, ()=>{                       // casa + paradas: não dependem do GPS, não piscam
+    ps.forEach((c,i)=> L.marker([c.lat,c.lng],{icon:_paradaIcon(i+1)}).addTo(_trackLayer));
+    if(dest) L.marker([dest.lat,dest.lng],{icon:_homeIcon()}).addTo(_trackLayer);
+  });
+  ps.forEach(c=>pts.push([c.lat,c.lng]));
+  if(dest) pts.push([dest.lat,dest.lng]);
+  if(ent && dest){
+    const wp=[ent].concat(ps).concat([dest]);
+    const reqK='fila|'+psK+'|'+destK+'|'+ent.lat.toFixed(3)+','+ent.lng.toFixed(3);
+    const linhaOk = _cliLine && _cliDestK===reqK && _cliLine.length>1;
+    if(!linhaOk && _cliReq!==reqK){                            // recalcula só quando muda de verdade
+      _cliReq=reqK;
+      rotaRuas(wp).then(line=>{ if(line && line.length>1){ _cliLine=line; _cliDestK=reqK; desenharTrackFila(dest,ent,paradas); } }).catch(()=>{});
+    }
+    _cliFeita.setLatLngs([]);
+    if(linhaOk){ _cliResta.setLatLngs(_cliLine); _cliResta.setStyle({dashArray:null,opacity:.85,weight:4}); pts.push(_cliLine[0]); }
+    else { _cliResta.setLatLngs(wp.map(c=>[c.lat,c.lng])); _cliResta.setStyle({dashArray:'6,8',opacity:.5,weight:3}); pts.push([ent.lat,ent.lng]); }
+    _motoCli(ent.lat,ent.lng,null,0);
+    motosManter(['cli']);
+  } else {
+    if(_cliFeita) _cliFeita.setLatLngs([]); if(_cliResta) _cliResta.setLatLngs([]);
+    motosManter([]);
+  }
+  enquadrar(pts);
+}
 function pararTrackEnt(){ if(_trackUnsubEnt){ _trackUnsubEnt(); _trackUnsubEnt=null; } }
 function pararTrackTudo(){   // entrega finalizada → para de ler TUDO (não consome mais nada)
   pararTrackEnt();
@@ -494,35 +518,6 @@ function abrirFalar(ev){
 function _etaHero(num,unit,whenTs){ const eta=$('track-eta'); if(!eta) return; eta.classList.add('hero'); eta.innerHTML=`<span class="num">${num}</span><span class="unit">${unit}</span><span class="when">chegada prevista<b>~${fmtClock(whenTs)}</b></span>`; }
 function _etaPlain(txt){ const eta=$('track-eta'); if(!eta) return; eta.classList.remove('hero'); eta.textContent=txt||''; }
 function _fila(antes, prevTs){ const f=$('track-fila'); if(!f) return; if(antes>0){ f.classList.add('on'); f.innerHTML=`<span class="fnum">${antes}</span><span class="ftx">${antes===1?'entrega':'entregas'} antes da sua na rota${prevTs?`<br><b>previsão ~${fmtClock(prevTs)}</b>`:''}</span>`; } else { f.classList.remove('on'); f.innerHTML=''; } }
-/* A rota do entregador ATÉ o cliente. Ele ordena as paradas no painel; aqui a pessoa vê
-   essa mesma ordem e a hora prevista de cada uma, pra entender quanto falta em vez de só
-   ver a moto parada em algum lugar. Mostra NÚMERO e BAIRRO — nunca nome, endereço ou
-   telefone de outro cliente, que a rota nem carrega. */
-function _escR(s){ return (''+(s==null?'':s)).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-function _rotaCliente(viva, meuId){
-  const box=$('track-rota'); if(!box) return;
-  const arr=_trackRota||[];
-  const idx=arr.findIndex(s=>String(s.id)===String(meuId));
-  if(idx<1){ box.classList.remove('on'); box.innerHTML=''; return; }   // sou a próxima (ou não achei): nada a mostrar
-  let cur = viva || (arr.find(s=>s&&s.coord)||{}).coord || null;
-  let t=Date.now(), linhas='';
-  for(let i=0;i<=idx;i++){
-    const s=arr[i];
-    if(s.coord && cur){ t += legMin(cur,s.coord)*60000 + 2*60000; cur=s.coord; }
-    else { t += 8*60000; }
-    const eu = i===idx;
-    linhas += '<div class="rt-item'+(eu?' eu':'')+'">'
-      + '<span class="rt-n">'+(eu?'★':(i+1))+'</span>'
-      + '<span class="rt-t">'+(eu?'<b>Você</b>':('Parada '+(i+1)+(s.bairro?' · '+_escR(s.bairro):'')))+'</span>'
-      + '<span class="rt-h">'+fmtClock(t)+'</span></div>';
-  }
-  const depois=arr.length-1-idx;
-  box.classList.add('on');
-  box.innerHTML = '<div class="rt-h1">🛵 A rota até você</div><div class="rt-list">'+linhas+'</div>'
-    + '<div class="rt-nota">Horários estimados — o entregador organiza a ordem das entregas'
-    + (depois>0 ? (' · mais '+depois+(depois===1?' entrega':' entregas')+' depois de você') : '')+'</div>';
-}
-function _hideRota(){ const b=$('track-rota'); if(b){ b.classList.remove('on'); b.innerHTML=''; } }
 function _hideFila(){ const f=$('track-fila'); if(f){ f.classList.remove('on'); f.innerHTML=''; } }
 function _hojeKeyR(){ var n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0'); }
 function _finalStampR(e){ return Math.max(e.entregueEm||0, e.desfechoEm||0); }
@@ -553,13 +548,13 @@ function atualizarRastreioCliente(){
   if(pulse) pulse.style.display='none';                             // no design novo o "ao vivo" fica no topo
   // (sem identificação de nome no card — decisão do cliente)
   if(e.status==='entregue'){
-    _setSteps('entregue'); _hideCourier(); _hideFila(); _hideRota(); _etaPlain('');
+    _setSteps('entregue'); _hideCourier(); _hideFila(); _etaPlain('');
     st.textContent='✓ Pedido entregue';
     sub.textContent='Esta entrega já foi concluída. Obrigado por comprar na Loretto Scarpa 💛';
     desenharTrack(dest,null); pararTrackTudo(); return;
   }
   if(e.status==='nao_entregue' || e.status==='cancelado'){
-    _setSteps('encerrada'); _hideCourier(); _hideFila(); _hideRota(); _etaPlain('');
+    _setSteps('encerrada'); _hideCourier(); _hideFila(); _etaPlain('');
     st.textContent='Entrega encerrada';
     sub.textContent='Fale com a loja para mais informações.';
     desenharTrack(dest,null); pararTrackTudo(); return;
@@ -568,7 +563,7 @@ function atualizarRastreioCliente(){
   const viva=(r && r.ativo && r.lat!=null && (Date.now()-(r.atualizadoEm||0)<150000)) ? {lat:r.lat,lng:r.lng} : null;
   if(viva && r && r.atualizadoEm) _registraVel(viva, r.atualizadoEm);   // mede a velocidade real do entregador
   if(e.status==='aguardando'){
-    _setSteps('aguardando'); _hideCourier(); _hideFila(); _hideRota(); _etaPlain('');
+    _setSteps('aguardando'); _hideCourier(); _hideFila(); _etaPlain('');
     st.textContent='Preparando seu pedido';
     sub.textContent='Estamos separando o seu pedido. Assim que um entregador sair com ele, você acompanha por aqui.';
     desenharTrack(dest,null); return;
@@ -588,13 +583,16 @@ function atualizarRastreioCliente(){
     st.textContent = _nome ? `${_nome} coletou o seu pedido` : 'Seu pedido saiu para entrega';
     const antes=posInfo.pos-1;
     const prev=_previsaoChegada(viva, _meuId);
-    _etaPlain(''); _fila(antes, prev); _rotaCliente(viva, _meuId);
+    _etaPlain(''); _fila(antes, prev);
     sub.innerHTML = 'Assim que chegar a sua vez, a moto aparece aqui no mapa em tempo real.';
-    desenharTrack(dest,null);   // sem a moto no mapa ainda
+    // só as paradas ANTES dele; a dele fecha a linha, como casa
+    const _ate=(_trackRota||[]).findIndex(x=>String(x.id)===String(_meuId));
+    const _antes=(_ate>0?_trackRota.slice(0,_ate):[]).map(x=>x.coord).filter(Boolean);
+    desenharTrackFila(dest, viva, _antes);
     return;
   }
   // é a próxima entrega → agora sim mostra a moto indo (se tiver GPS)
-  _setSteps('a_caminho'); _hideFila(); _hideRota();
+  _setSteps('a_caminho'); _hideFila();
   if(viva && dest){
     const min=Math.max(1,Math.round(etaRealMin(viva,dest)));   // tempo real de rua (reaproveita a rota já desenhada)
     if(live) live.classList.add('on');
