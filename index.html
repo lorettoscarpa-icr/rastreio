@@ -211,6 +211,30 @@ const $ = id => document.getElementById(id);
 let fdb=null, FIREBASE_ON=false;
 try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initializeApp(FIREBASE_CONFIG); fdb=firebase.firestore(); FIREBASE_ON=true; } }catch(e){ console.warn('firebase', e); }
 
+/* ---------- entrar sem derrubar quem já está logado ----------
+   A autenticação do Firebase é compartilhada por TODO o site (mesma origem). Entrar como
+   anônimo aqui apagava a sessão de quem estava na Central: no meio do carregamento desta
+   página ela era jogada de volta pra tela de login. Foi isso o tempo todo — não a aba nova.
+   Então: se já tem alguém logado, aproveita. Dentro da Central, nunca entra como anônimo —
+   a identidade dela já basta (e é mais permissiva). Só entra anônimo quando é mesmo um
+   visitante sozinho, como o cliente abrindo o link de rastreio. */
+function lsEntrar(cb){
+  if(typeof firebase==='undefined'){ cb(); return; }
+  var a; try{ a=firebase.auth(); }catch(e){ cb(); return; }
+  var feito=false, off=null;
+  function segue(){ if(feito) return; feito=true; try{ off&&off(); }catch(e){} cb(); }
+  var socorro=setTimeout(segue, 4000);            // nuvem sem responder não trava a tela
+  try{
+    off=a.onAuthStateChanged(function(u){
+      if(feito) return;
+      clearTimeout(socorro);
+      if(u || window.self!==window.top){ segue(); return; }   // já logado, ou dentro da Central
+      feito=true; try{ off&&off(); }catch(e){}
+      a.signInAnonymously().then(cb).catch(cb);
+    }, segue);
+  }catch(e){ clearTimeout(socorro); segue(); }
+}
+
 /* ===== token opaco (mesmo do app) ===== */
 function _ub64u(s){ s=String(s||'').replace(/-/g,'+').replace(/_/g,'/'); try{ return decodeURIComponent(escape(atob(s))); }catch(_){ return ''; } }
 function _chk(id){ let n=0; const s='LSx'+id; for(let i=0;i<s.length;i++) n=(n*31+s.charCodeAt(i))%100000; return n; }
@@ -640,7 +664,7 @@ function iniciarRastreioCliente(id){
       atualizarRastreioCliente();
     }, ()=>{ $('track-st').textContent='Não consegui carregar agora'; });
   };
-  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(sub).catch(sub); }
+  if(typeof firebase!=='undefined' && FIREBASE_ON){ lsEntrar(sub); }
   else { $('track-st').textContent='Sem conexão com o servidor'; $('track-pulse').className='track-pulse off'; }
   _trackInt = setInterval(atualizarRastreioCliente, 30000);
 }
@@ -833,7 +857,7 @@ function iniciarPainelFrota(){
       snap=>{ const docs={}; snap.forEach(d=>{ docs[d.id]=d.data()||{}; }); _ultFrota=docs; frotaAtualiza(); },
       ()=>{ if(list) list.innerHTML='<div class="frota-row"><span class="rnome">Não consegui carregar agora</span></div>'; }
     ); };
-  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(sub).catch(sub); }
+  if(typeof firebase!=='undefined' && FIREBASE_ON){ lsEntrar(sub); }
   else if(list){ list.innerHTML='<div class="frota-row"><span class="rnome">Sem conexão com o servidor</span></div>'; }
   if(_frotaTimer) clearInterval(_frotaTimer);
   _frotaTimer=setInterval(()=>{ if(_ultFrota) frotaAtualiza(); }, 30000);
@@ -1082,8 +1106,7 @@ function confirmarEntregador(id){
   const ov=$('ent-ov'); if(ov) ov.style.display='none';
   const tr=$('ent-trocar'); if(tr) tr.style.display='block';
   trackEnsureMap();
-  if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(()=>iniciarModoEntregador(d)).catch(()=>iniciarModoEntregador(d)); }
-  else iniciarModoEntregador(d);
+  lsEntrar(()=>iniciarModoEntregador(d));
 }
 function trocarEntregador(){
   try{ localStorage.removeItem('ls_ent_id'); }catch(_){}
@@ -1150,8 +1173,7 @@ function instalarApp(){
     const d=dadosDeTokenEnt(hashTx);
     if(d){
       trackEnsureMap();
-      if(typeof firebase!=='undefined' && FIREBASE_ON){ firebase.auth().signInAnonymously().then(()=>iniciarModoEntregador(d)).catch(()=>iniciarModoEntregador(d)); }
-      else iniciarModoEntregador(d);
+      lsEntrar(()=>iniciarModoEntregador(d));
       return;
     }
     $('track-title').textContent='Link inválido'; $('track-st').textContent='Link de transmissão inválido';

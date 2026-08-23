@@ -112,6 +112,30 @@ var FIREBASE_CONFIG = {
 var fdb=null, FIREBASE_ON=false;
 try{ if(typeof firebase!=='undefined' && FIREBASE_CONFIG.apiKey){ firebase.initializeApp(FIREBASE_CONFIG); fdb=firebase.firestore(); FIREBASE_ON=true; } }catch(e){ console.warn('firebase', e); }
 
+/* ---------- entrar sem derrubar quem já está logado ----------
+   A autenticação do Firebase é compartilhada por TODO o site (mesma origem). Entrar como
+   anônimo aqui apagava a sessão de quem estava na Central: no meio do carregamento desta
+   página ela era jogada de volta pra tela de login. Foi isso o tempo todo — não a aba nova.
+   Então: se já tem alguém logado, aproveita. Dentro da Central, nunca entra como anônimo —
+   a identidade dela já basta (e é mais permissiva). Só entra anônimo quando é mesmo um
+   visitante sozinho, como o cliente abrindo o link de rastreio. */
+function lsEntrar(cb){
+  if(typeof firebase==='undefined'){ cb(); return; }
+  var a; try{ a=firebase.auth(); }catch(e){ cb(); return; }
+  var feito=false, off=null;
+  function segue(){ if(feito) return; feito=true; try{ off&&off(); }catch(e){} cb(); }
+  var socorro=setTimeout(segue, 4000);            // nuvem sem responder não trava a tela
+  try{
+    off=a.onAuthStateChanged(function(u){
+      if(feito) return;
+      clearTimeout(socorro);
+      if(u || window.self!==window.top){ segue(); return; }   // já logado, ou dentro da Central
+      feito=true; try{ off&&off(); }catch(e){}
+      a.signInAnonymously().then(cb).catch(cb);
+    }, segue);
+  }catch(e){ clearTimeout(socorro); segue(); }
+}
+
 var WA_ICON='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.06 24l1.68-6.16A11.87 11.87 0 010 11.92C0 5.34 5.35 0 11.93 0a11.86 11.86 0 018.42 3.5 11.82 11.82 0 013.49 8.42c0 6.58-5.35 11.93-11.93 11.93a11.9 11.9 0 01-5.7-1.45L.06 24zM6.6 20.13l.36.21a9.9 9.9 0 005.04 1.38 9.92 9.92 0 009.91-9.9 9.85 9.85 0 00-2.9-7.01 9.84 9.84 0 00-7-2.9 9.92 9.92 0 00-9.92 9.9c0 1.9.54 3.75 1.56 5.34l.24.38-1 3.65 3.71-.95zm11.1-5.3c-.15-.25-.55-.4-1.15-.7-.6-.3-3.5-1.73-4.04-1.92-.54-.2-.94-.3-1.33.3-.4.6-1.53 1.92-1.87 2.31-.35.4-.69.45-1.28.15-.6-.3-2.5-.92-4.76-2.94-1.76-1.57-2.95-3.51-3.29-4.1-.35-.6-.04-.92.26-1.22.27-.27.6-.7.9-1.05.3-.35.4-.6.6-1 .2-.4.1-.74-.05-1.04-.15-.3-1.33-3.2-1.82-4.38-.48-1.15-.97-1-1.33-1.01l-1.14-.02c-.4 0-1.04.15-1.58.74-.54.6-2.07 2.02-2.07 4.93s2.12 5.72 2.42 6.12c.3.4 4.17 6.37 10.1 8.93 1.41.6 2.51.96 3.37 1.23 1.42.45 2.7.39 3.72.24 1.14-.17 3.5-1.43 3.99-2.81.49-1.38.49-2.56.34-2.81z"/></svg>';
 
 /* entregadores reais (id, nome, cor, tel) — a lista que será consultada */
@@ -386,7 +410,7 @@ function iniciar(){
       renderEntLiveList(); renderMapLive();
     }, function(e){ console.warn('entregas '+ent.id, e); });
   }
-  if(typeof firebase!=='undefined'){ firebase.auth().signInAnonymously().then(sub).catch(sub); } else sub();
+  lsEntrar(sub);
   // atualiza só o "há X" do status a cada 20s
   setInterval(function(){
     document.querySelectorAll('[data-when]').forEach(function(el){ el.textContent=statusInfo(el.getAttribute('data-when')).txt; });
