@@ -18,7 +18,20 @@
   body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ff-eyebrow);-webkit-font-smoothing:antialiased}
 
   .ent-live-ov{position:fixed;inset:0;z-index:340;background:var(--bg);display:flex;flex-direction:column;overscroll-behavior:contain}
-  .ent-live-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:2}
+  .ent-live-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:2}
+  /* navegação por dia — mesmo gesto do painel do entregador e do da vendedora */
+  .elv-dias{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%}
+  .elv-nav{width:34px;height:34px;flex:none;border-radius:9px;border:1px solid var(--line-strong);background:transparent;
+    color:var(--gold-lt);font-size:18px;line-height:1;cursor:pointer;font-family:var(--ff-eyebrow)}
+  .elv-nav:hover:not(:disabled){background:rgba(212,180,90,.12)}
+  .elv-nav:disabled{opacity:.3;cursor:default}
+  .elv-dia{position:relative;flex:1;min-width:150px;text-align:center;border:1px solid var(--line-strong);
+    border-radius:9px;padding:7px 12px;background:rgba(0,0,0,.14)}
+  .elv-dia b{font-size:13.5px;color:var(--text);font-weight:600}
+  .elv-dia input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:pointer}
+  .elv-hoje{flex:none;border:1px solid var(--line-strong);border-radius:9px;background:transparent;color:var(--gold-lt);
+    font-family:var(--ff-eyebrow);font-size:12.5px;padding:7px 11px;cursor:pointer;min-height:34px}
+  .elv-hoje:hover{background:rgba(212,180,90,.12)}
   .ent-live-title{font-family:var(--ff-display);font-size:21px;color:var(--gold-lt);flex:1;font-weight:600}
   .ent-live-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px calc(24px + env(safe-area-inset-bottom)) 16px;max-width:640px;margin:0 auto;width:100%}
   .ent-live-map{height:300px;border-radius:14px;overflow:hidden;border:1px solid var(--line-strong);background:var(--surface);margin-bottom:8px}
@@ -73,6 +86,8 @@
   .lsmoto-dot{position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid rgba(255,255,255,.9);box-shadow:0 3px 11px rgba(0,0,0,.45)}
   .ls-num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:var(--gold);color:#14210d;font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45)}
   .ls-done{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#7dd08f;color:#0c2c1a;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+  /* parada de dia passado que não deu certo: mesma numeração, cor de aviso */
+  .ls-num.falhou{background:#d98a5a;color:#2a1408}
 
   @media(max-width:560px){ .ent-live-map{height:240px} }
 </style>
@@ -82,6 +97,12 @@
 <div id="ent-live-ov" class="ent-live-ov">
   <div class="ent-live-head">
     <div class="ent-live-title" id="ent-live-title">🏍️ Entregadores Ao Vivo</div>
+    <div class="elv-dias">
+      <button class="elv-nav" onclick="mudarDia(-1)" aria-label="Dia anterior">&lsaquo;</button>
+      <div class="elv-dia"><b id="elv-dia-rot">—</b><input type="date" id="elv-dia-inp" onchange="irDia(this.value)" aria-label="Escolher a data"></div>
+      <button class="elv-nav" id="elv-nav-prox" onclick="mudarDia(1)" aria-label="Próximo dia">&rsaquo;</button>
+      <button class="elv-hoje" id="elv-hoje" onclick="irDia(_hojeKey())" style="display:none">↩ hoje</button>
+    </div>
   </div>
   <div class="ent-live-body">
     <div id="map-live" class="ent-live-map"></div>
@@ -214,16 +235,53 @@ function statusInfo(id){
   if(posicaoViva(id)) return {vivo:true, txt:'atualizado '+fmtAgeCurto(r.atualizadoEm)};
   return {vivo:false, txt:'última '+fmtAgeCurto(r.atualizadoEm)};
 }
+/* ===== o dia que está na tela =====
+   A frota nasceu olhando só pra hoje, e é isso que ela faz o dia inteiro. Mas a rota de
+   ontem, ou a de sábado, continua inteira nos dados: as paradas, a ordem em que ele fechou
+   cada uma e o horário de cada fechamento. Só faltava poder chegar lá.
+   O que NÃO existe pra trás é o rastro do GPS — a coleção `rastreio` guarda uma posição
+   por entregador, a última. Então em dia passado o mapa mostra a rota que ele fez, não por
+   onde a moto passou, e a tela diz isso em vez de deixar parecer que é a mesma coisa. */
+var _dia=_hojeKey();
+function _diaDe(ts){ if(!ts) return ''; var d=new Date(ts);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _ehHojeDia(){ return _dia===_hojeKey(); }
+function _diaMais(ymd,n){ var p=String(ymd).split('-'), d=new Date(+p[0],+p[1]-1,+p[2]);
+  d.setDate(d.getDate()+n); return _diaDe(d.getTime()); }
+function rotDia(ymd){
+  var pre='';
+  if(ymd===_hojeKey()) pre='Hoje · ';
+  else if(ymd===_diaMais(_hojeKey(),-1)) pre='Ontem · ';
+  var p=String(ymd).split('-'), dt=new Date(+p[0],+p[1]-1,+p[2]);
+  return pre+dt.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'});
+}
 function _entLiveDados(id){
-  var minhas=_porEnt[id]||[];
-  var rota=minhas.filter(function(e){ return e.status==='em_rota' && !_finalizadaE(e) && (!e.dataEntrega || e.dataEntrega === _hojeKey()); })
+  var minhas=_porEnt[id]||[], hoje=_ehHojeDia();
+  /* Hoje, "em rota" é o que ele ainda tem pra fazer. Num dia passado é outra coisa: é o que
+     ficou em aberto e ninguém fechou — vale mostrar, com esse nome. */
+  var rota=minhas.filter(function(e){ return e.status==='em_rota' && !_finalizadaE(e) &&
+      (hoje ? (!e.dataEntrega || e.dataEntrega===_dia) : e.dataEntrega===_dia); })
     .sort(function(a,b){ return ((a.ordemManual==null?9999:a.ordemManual)-(b.ordemManual==null?9999:b.ordemManual)) || ((a.roteadoEm||0)-(b.roteadoEm||0)); });
-  // FINALIZADAS de HOJE = entregues + não concluídas, em ordem de horário
-  var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0 && _ehHoje(e.entregueEm||e.desfechoEm); })
+  // finalizadas do dia = entregues + não concluídas, na ordem em que ele fechou
+  var fin=minhas.filter(function(e){ return ['entregue','nao_entregue','cancelado'].indexOf(e.status)>=0 &&
+      _diaDe(e.entregueEm||e.desfechoEm)===_dia; })
     .map(function(e){ return {e:e, ok:e.status==='entregue', when:(e.entregueEm||e.desfechoEm||0)}; })
     .sort(function(a,b){ return a.when-b.when; });
-  return {rota:rota, fin:fin};
+  return {rota:rota, fin:fin, hoje:hoje};
 }
+function pintarDia(){
+  var r=$('elv-dia-rot'); if(r) r.textContent=rotDia(_dia);
+  var i=$('elv-dia-inp'); if(i){ i.value=_dia; i.max=_hojeKey(); }
+  var h=$('elv-hoje'); if(h) h.style.display=_ehHojeDia()?'none':'';
+  var n=$('elv-nav-prox'); if(n) n.disabled=_ehHojeDia();   // não há rota no futuro
+}
+function irDia(y){
+  if(!y) return;
+  if(y>_hojeKey()) y=_hojeKey();
+  _dia=y; _focoKey=null; _focoLine=null;
+  assinarDia(_dia); pintarDia(); renderEntLiveList(); renderMapLive();
+}
+function mudarDia(d){ irDia(_diaMais(_dia,d)); }
 
 /* ===== mapa ===== */
 var mapLive=null, mapLiveLayer=null, _mapLiveInit=false;
@@ -246,7 +304,7 @@ function _motoDiv(cor, fresca){
   return L.divIcon({className:'lsdi',iconSize:[40,40],iconAnchor:[20,20],html:'<div class="lsmoto-wrap">'+halo+'<div class="lsmoto-dot" style="'+dot+'">🏍️</div></div>'});
 }
 function _ageTxt(min){ if(min<1) return 'agora mesmo'; if(min<60) return 'há '+min+' min'; var h=Math.floor(min/60); return 'há '+h+'h'+(min%60?(' '+(min%60)+'min'):''); }
-function _numDiv(n){ return L.divIcon({className:'lsdi',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="ls-num">'+n+'</div>'}); }
+function _numDiv(n,falhou){ return L.divIcon({className:'lsdi',iconSize:[28,28],iconAnchor:[14,14],html:'<div class="ls-num'+(falhou?' falhou':'')+'">'+n+'</div>'}); }
 function _doneDiv(){ return L.divIcon({className:'lsdi',iconSize:[24,24],iconAnchor:[12,12],html:'<div class="ls-done">✓</div>'}); }
 
 /* rota real pela rua (OSRM público; cai na reta se falhar) */
@@ -267,6 +325,7 @@ function renderMapLive(){
 }
 function desenharTodos(){
   mapLiveLayer.clearLayers();
+  if(!_ehHojeDia()) return desenharTodosDiaPassado();
   var bounds=[], n=0, nVivo=0;
   ENTREGADORES.forEach(function(ent){
     var p=posicaoUltima(ent.id); if(!p) return;
@@ -288,6 +347,7 @@ function desenharFoco(){
   mapLiveLayer.clearLayers();
   var ent=ENT[_focoId]; if(!ent) return;
   var d=_entLiveDados(_focoId);
+  if(!d.hoje) return desenharDiaPassado(ent, d);
   var pos=posicaoUltima(_focoId);
   var bounds=[];
   d.fin.forEach(function(f){ var c=f.ok?coordOf(f.e):null; if(c){ L.marker([c.lat,c.lng],{icon:_doneDiv()}).addTo(mapLiveLayer); bounds.push([c.lat,c.lng]); } });
@@ -308,46 +368,125 @@ function desenharFoco(){
   if(note) note.textContent = (st.vivo?'🟢 ':'⚪ ')+esc(ent.nome)+' · '+st.txt+' · '+(d.rota.length?(d.rota.length+' parada'+(d.rota.length>1?'s':'')+' restante'+(d.rota.length>1?'s':'')):'rota concluída');
 }
 
+/* Visão geral de um dia passado: sem moto piscando, mas dá pra ver onde cada um rodou —
+   cada entregador com a cor dele, na primeira parada do dia. */
+function desenharTodosDiaPassado(){
+  var bounds=[], gente=0, paradas=0;
+  ENTREGADORES.forEach(function(ent){
+    var d=_entLiveDados(ent.id);
+    var pontos=d.fin.map(function(f){ return coordOf(f.e); }).filter(Boolean);
+    if(!d.fin.length) return;
+    gente++; paradas+=d.fin.length;
+    pontos.forEach(function(c){
+      L.circleMarker([c.lat,c.lng],{radius:6,color:'#fff',weight:1.5,fillColor:ent.cor,fillOpacity:.9})
+        .addTo(mapLiveLayer).bindPopup('<b>'+esc(ent.nome)+'</b>');
+      bounds.push([c.lat,c.lng]);
+    });
+  });
+  if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[42,42],maxZoom:14});
+  else if(bounds.length===1) mapLive.setView(bounds[0],14);
+  var note=$('ent-live-mapnote');
+  if(note) note.textContent = gente
+    ? gente+' entregador'+(gente>1?'es':'')+' · '+paradas+' entrega'+(paradas>1?'s':'')+' fechada'+(paradas>1?'s':'')+' — toque em um pra ver a rota dele'
+    : 'Ninguém fechou entrega neste dia.';
+}
+
+/* A rota de um dia que já passou: as paradas na ordem em que ele fechou, numeradas, ligadas
+   pela rua. É a rota que ele fez de verdade — não o caminho da moto, que ninguém guardou. */
+function desenharDiaPassado(ent, d){
+  var bounds=[], wps=[], n=0;
+  d.fin.forEach(function(f){
+    var c=coordOf(f.e); if(!c) return;
+    n++;
+    L.marker([c.lat,c.lng],{icon:_numDiv(n, !f.ok)}).addTo(mapLiveLayer)
+      .bindPopup(n+'. <b>'+esc(f.e.cliente||'cliente')+'</b>'
+        +(f.when?'<br>🕒 '+fmtClock(f.when):'')
+        +'<br>'+(f.ok?'✓ entregue':'✕ '+(f.e.status==='cancelado'?'não comprou':'não entregue')));
+    wps.push(c); bounds.push([c.lat,c.lng]);
+  });
+  d.rota.forEach(function(e){                       // ficou em aberto naquele dia
+    var c=coordOf(e); if(!c) return;
+    L.marker([c.lat,c.lng],{icon:_numDiv('?',true)}).addTo(mapLiveLayer)
+      .bindPopup('<b>'+esc(e.cliente||'cliente')+'</b><br>⚠ ficou em aberto neste dia');
+    bounds.push([c.lat,c.lng]);
+  });
+  var chave=_dia+'|'+ent.id+'|'+wps.map(function(p){return p.lat.toFixed(4)+','+p.lng.toFixed(4);}).join(';');
+  if(_focoKey!==chave){ _focoKey=chave; _focoLine=null;
+    if(wps.length>=2) rotaRuas(wps).then(function(line){
+      if(line && _focoId===ent.id && _focoKey===chave){ _focoLine=line; if(mapLiveLayer) desenharFoco(); }
+    });
+  }
+  if(wps.length>=2){
+    var pts=_focoLine ? _focoLine : wps.map(function(p){ return [p.lat,p.lng]; });
+    L.polyline(pts,{color:ent.cor, weight:4, opacity:.85, dashArray:_focoLine?null:'6,8'}).addTo(mapLiveLayer);
+  }
+  if(bounds.length>1) mapLive.fitBounds(bounds,{padding:[46,46],maxZoom:15});
+  else if(bounds.length===1) mapLive.setView(bounds[0],15);
+  var note=$('ent-live-mapnote');
+  if(note) note.textContent = n
+    ? esc(ent.nome)+' · '+n+' parada'+(n>1?'s':'')+' em '+rotDia(_dia).replace(/^.*· /,'')+' · o rastro do GPS só existe do dia de hoje'
+    : esc(ent.nome)+' não fechou nenhuma entrega neste dia';
+}
+
 /* ===== foco / voltar ===== */
-function selecionarFrota(id){ _focoId=id; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 '+ENT[id].nome; $('ent-live-sec').textContent='Rota em andamento'; renderEntLiveList(); renderMapLive(); var b=$('ent-live-body'); if(b) b.scrollTop=0; }
-function voltarFrota(){ _focoId=null; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 Entregadores Ao Vivo'; $('ent-live-sec').textContent='Toque em um entregador para ver a rota dele'; renderEntLiveList(); renderMapLive(); }
+function selecionarFrota(id){ _focoId=id; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 '+ENT[id].nome;
+  $('ent-live-sec').textContent = _ehHojeDia() ? 'Rota em andamento' : 'A rota de '+rotDia(_dia);
+  renderEntLiveList(); renderMapLive(); var b=$('ent-live-body'); if(b) b.scrollTop=0; }
+function voltarFrota(){ _focoId=null; _focoKey=null; _focoLine=null; $('ent-live-title').textContent='🛵 Entregadores Ao Vivo';
+  $('ent-live-sec').textContent = _ehHojeDia() ? 'Toque em um entregador para ver a rota dele' : 'Quem rodou em '+rotDia(_dia)+' — toque para ver a rota';
+  renderEntLiveList(); renderMapLive(); }
 
 /* ===== lista ===== */
 function _rowsRota(d){
   return d.rota.length
-    ? d.rota.map(function(e,i){ return '<div class="elv-row"><span class="num">'+(i+1)+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'sem bairro')+((e.horarioTipo&&e.horarioHora)?' · ⏰ '+esc(hrTxt(e)):'')+'</span></span></div>'; }).join('')
-    : '<div class="elv-empty">Nada em rota agora.</div>';
+    ? d.rota.map(function(e,i){ return '<div class="elv-row"><span class="num">'+(d.hoje?(i+1):'?')+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'sem bairro')+((e.horarioTipo&&e.horarioHora)?' · ⏰ '+esc(hrTxt(e)):'')+'</span></span></div>'; }).join('')
+    : '<div class="elv-empty">'+(d.hoje?'Nada em rota agora.':'Nada ficou em aberto neste dia.')+'</div>';
 }
 function _rowsFin(d){
-  if(!d.fin.length) return '<div class="elv-empty">Nenhuma finalizada hoje ainda.</div>';
-  return d.fin.map(function(f){
+  if(!d.fin.length) return '<div class="elv-empty">'+(d.hoje?'Nenhuma finalizada hoje ainda.':'Ele não fechou nenhuma entrega neste dia.')+'</div>';
+  return d.fin.map(function(f,i){
     var e=f.e, hr=f.when?fmtClock(f.when):'—';
-    if(f.ok) return '<div class="elv-row"><span class="hr">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag ok">✓ entregue</span></span></div>';
+    if(f.ok) return '<div class="elv-row"><span class="hr">🕒 '+hr+'</span><span class="info"><span class="cli">'+(d.hoje?'':(i+1)+'. ')+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag ok">✓ entregue</span></span></div>';
     var motivo = e.status==='cancelado' ? 'não comprou' : 'não entregue';
     if(e.motivo) motivo += ' · '+e.motivo;
-    return '<div class="elv-row fail"><span class="hr fail">🕒 '+hr+'</span><span class="info"><span class="cli">'+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag fail">✕ finalizada · não deu certo — '+esc(motivo)+'</span></span></div>';
+    return '<div class="elv-row fail"><span class="hr fail">🕒 '+hr+'</span><span class="info"><span class="cli">'+(d.hoje?'':(i+1)+'. ')+esc(e.cliente||'cliente')+'</span><span class="sub">'+esc([e.bairro,e.cidade].filter(Boolean).join(' - ')||'')+'</span><span class="tag fail">✕ finalizada · não deu certo — '+esc(motivo)+'</span></span></div>';
   }).join('');
+}
+function _pills(d){
+  return '<div class="elv-counts">'
+    +(d.hoje ? '<span class="elv-pill rota">🛵 em rota: <b>'+d.rota.length+'</b></span>'
+             : (d.rota.length?'<span class="elv-pill rota">⚠ em aberto: <b>'+d.rota.length+'</b></span>':''))
+    +'<span class="elv-pill ok">✓ '+(d.hoje?'finalizadas hoje':'entregas do dia')+': <b>'+d.fin.length+'</b></span>'
+  +'</div>';
 }
 function focoCardHTML(id){
   var ent=ENT[id], d=_entLiveDados(id), st=statusInfo(id);
   var prox=d.rota[0];
-  var caminho = prox ? ('🛵 A caminho de <b>'+esc((prox.cliente||'cliente').split(' ')[0])+'</b>'+(prox.bairro?' · '+esc(prox.bairro):'')) : '✓ Rota concluída por hoje';
+  var primeiro=d.fin[0], ultimo=d.fin[d.fin.length-1];
+  var caminho = d.hoje
+    ? (prox ? ('🛵 A caminho de <b>'+esc((prox.cliente||'cliente').split(' ')[0])+'</b>'+(prox.bairro?' · '+esc(prox.bairro):'')) : '✓ Rota concluída por hoje')
+    : (d.fin.length
+        ? '🗓️ '+rotDia(_dia)+' · <b>'+d.fin.length+'</b> parada'+(d.fin.length>1?'s':'')
+          +(primeiro&&primeiro.when?' · das <b>'+fmtClock(primeiro.when)+'</b> às <b>'+fmtClock(ultimo.when)+'</b>':'')
+        : '🗓️ '+rotDia(_dia)+' · sem entregas fechadas');
   var tel=telEnt(id);
   return '<button class="elv-back" onclick="voltarFrota()">‹ Ver todos</button>'
     +'<div class="elv-card foco">'
       +'<div class="elv-head" style="cursor:default">'
         +_entAvatar(ent)
-        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span><span class="elv-when" data-when="'+ent.id+'">'+st.txt+'</span></span>'
-        +'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>'
+        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span>'
+          +'<span class="elv-when"'+(d.hoje?' data-when="'+ent.id+'"':'')+'>'+esc(d.hoje?st.txt:rotDia(_dia))+'</span></span>'
+        +(d.hoje?'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>':'')
       +'</div>'
-      +'<div class="elv-counts">'
-        +'<span class="elv-pill rota">🛵 em rota: <b>'+d.rota.length+'</b></span>'
-        +'<span class="elv-pill ok">✓ finalizadas hoje: <b>'+d.fin.length+'</b></span>'
-      +'</div>'
+      +_pills(d)
       +'<div class="elv-body">'
         +'<div class="elv-caminho">'+caminho+'</div>'
-        +'<div class="elv-grp">🛵 Em rota agora — paradas que faltam ('+d.rota.length+')</div>'+_rowsRota(d)
-        +'<div class="elv-grp">✓ Finalizadas hoje — na ordem que ele fechou ('+d.fin.length+')</div>'+_rowsFin(d)
+        +((d.hoje||d.rota.length)
+          ? '<div class="elv-grp">'+(d.hoje?'🛵 Em rota agora — paradas que faltam ('+d.rota.length+')'
+                                          :'⚠ Ficou em aberto neste dia ('+d.rota.length+')')+'</div>'+_rowsRota(d)
+          : '')
+        +'<div class="elv-grp">'+(d.hoje?'✓ Finalizadas hoje':'✓ A rota de '+rotDia(_dia))
+          +' — na ordem que ele fechou ('+d.fin.length+')</div>'+_rowsFin(d)
         +(tel?'<div class="elv-acts"><a class="elv-wa" href="https://wa.me/'+tel+'" target="_blank" rel="noopener">'+WA_ICON+' Falar com '+esc(ent.nome.split(' ')[0])+'</a></div>':'')
       +'</div>'
     +'</div>';
@@ -355,30 +494,60 @@ function focoCardHTML(id){
 function renderEntLiveList(){
   var box=$('ent-live-list'); if(!box) return;
   if(_focoId){ box.innerHTML=focoCardHTML(_focoId); return; }
-  var dados=ENTREGADORES.map(function(ent){ return {ent:ent, vivo:!!posicaoViva(ent.id), st:statusInfo(ent.id), d:_entLiveDados(ent.id)}; });
+  var hoje=_ehHojeDia();
+  var dados=ENTREGADORES.map(function(ent){ return {ent:ent, vivo:hoje&&!!posicaoViva(ent.id), st:statusInfo(ent.id), d:_entLiveDados(ent.id)}; });
   dados.sort(function(a,b){ return (b.vivo-a.vivo) || (b.d.rota.length-a.d.rota.length) || (b.d.fin.length-a.d.fin.length); });
   var mostra=dados.filter(function(x){ return x.d.rota.length>0 || x.d.fin.length>0; });
-  if(!mostra.length){ box.innerHTML='<div class="elv-msg">Nenhum entregador com entregas hoje no momento.</div>'; return; }
+  if(!mostra.length){ box.innerHTML='<div class="elv-msg">'+(hoje
+      ? 'Nenhum entregador com entregas hoje no momento.'
+      : 'Ninguém rodou em '+esc(rotDia(_dia))+'.')+'</div>'; return; }
   box.innerHTML = mostra.map(function(o){
     var ent=o.ent, d=o.d, st=o.st;
+    /* Em dia passado, "ao vivo / sem sinal" não quer dizer nada — a posição guardada é a de
+       hoje. Mostrar isso ali seria só confundir. No lugar entra o horário da rota. */
+    var horas = (!hoje && d.fin.length && d.fin[0].when)
+      ? fmtClock(d.fin[0].when)+' às '+fmtClock(d.fin[d.fin.length-1].when) : '';
     return '<div class="elv-card">'
       +'<div class="elv-head" onclick="selecionarFrota(\''+ent.id+'\')">'
         +_entAvatar(ent)
-        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span><span class="elv-when" data-when="'+ent.id+'">'+st.txt+'</span></span>'
-        +'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>'
+        +'<span class="elv-id"><span class="elv-name">'+esc(ent.nome)+'</span>'
+          +'<span class="elv-when"'+(hoje?' data-when="'+ent.id+'"':'')+'>'+esc(hoje?st.txt:(horas||rotDia(_dia)))+'</span></span>'
+        +(hoje?'<span class="elv-live '+(st.vivo?'on':'off')+'">'+(st.vivo?'🟢 ao vivo':'⚪ sem sinal')+'</span>':'')
         +'<span class="elv-chev">›</span>'
       +'</div>'
-      +'<div class="elv-counts">'
-        +'<span class="elv-pill rota">🛵 em rota: <b>'+d.rota.length+'</b></span>'
-        +'<span class="elv-pill ok">✓ finalizadas hoje: <b>'+d.fin.length+'</b></span>'
-      +'</div>'
+      +_pills(d)
     +'</div>';
   }).join('');
 }
 
 /* ===== conexão (abre sem login, igual ao antigo) ===== */
-var _unsubRast=null, _unsubEnt={}, _unsubHoje=null, _started=false;
+var _unsubRast=null, _unsubEnt={}, _unsubHoje=null, _diasVistos={}, _started=false;
 function listMsg(t){ var b=$('ent-live-list'); if(b) b.innerHTML='<div class="elv-msg">'+esc(t)+'</div>'; }
+/* A consulta por entregador já traz o histórico inteiro dele — voltar no tempo não custa
+   leitura nenhuma. Esta aqui é outra coisa: é a rede de segurança pra quem entregou sem ter
+   ficha nesta tela. Hoje ela fica escutando; num dia que já passou nada muda mais, então é
+   uma leitura só, e uma vez por dia visitado. */
+function assinarEntregador(ent){
+  if(!ent || !fdb || _unsubEnt[ent.id]) return;
+  _unsubEnt[ent.id]=fdb.collection('entregas').where('entregador','==',ent.id).onSnapshot(function(snap){
+    var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _porEnt[ent.id]=arr;
+    renderEntLiveList(); renderMapLive();
+  }, function(e){ console.warn('entregas '+ent.id, e); });
+}
+function assinarDia(dia){
+  if(!fdb || _diasVistos[dia]) return;
+  _diasVistos[dia]=1;
+  var q=fdb.collection('entregas').where('dataEntrega','==',dia);
+  var trata=function(snap){
+    var novos=[];
+    snap.forEach(function(d){ var x=d.data()||{}; if(x.entregador && _regEntregador(x.entregador)) novos.push(x.entregador); });
+    novos.forEach(function(id){ assinarEntregador(ENT[id]); });
+    if(novos.length){ renderEntLiveList(); renderMapLive(); }
+  };
+  var falhou=function(e){ console.warn('entregas do dia '+dia, e); _diasVistos[dia]=0; };
+  if(dia===_hojeKey()) _unsubHoje=q.onSnapshot(trata, falhou);
+  else q.get().then(trata).catch(falhou);
+}
 function iniciar(){
   if(_started) return; _started=true;
   if(!FIREBASE_ON || !fdb){ listMsg('Sem conexão com o servidor.'); return; }
@@ -390,34 +559,19 @@ function iniciar(){
     }, function(e){ console.warn('rastreio', e); });
     // entregas de cada entregador — uma consulta pequena por pessoa (sem "ler tudo")
     ENTREGADORES.forEach(assinarEntregador);
-    // rede de segurança: as entregas de HOJE, de todo mundo. É uma consulta só, de um dia,
-    // e é o que garante que ninguém do painel fique de fora da frota por falta de ficha aqui.
-    _unsubHoje=fdb.collection('entregas').where('dataEntrega','==',_hojeKey()).onSnapshot(function(snap){
-      var novos=[];
-      snap.forEach(function(d){
-        var x=d.data()||{};
-        if(x.entregador && _regEntregador(x.entregador)) novos.push(x.entregador);
-      });
-      // quem apareceu agora ganha a mesma consulta dos outros (pega também o que não é de hoje)
-      novos.forEach(function(id){ assinarEntregador(ENT[id]); });
-      if(novos.length){ renderEntLiveList(); renderMapLive(); }
-    }, function(e){ console.warn('entregas de hoje', e); });
+    assinarDia(_hojeKey());
+    if(!_ehHojeDia()) assinarDia(_dia);
   };
-  function assinarEntregador(ent){
-    if(!ent || _unsubEnt[ent.id]) return;
-    _unsubEnt[ent.id]=fdb.collection('entregas').where('entregador','==',ent.id).onSnapshot(function(snap){
-      var arr=[]; snap.forEach(function(d){ var x=d.data()||{}; x.id=d.id; arr.push(x); }); _porEnt[ent.id]=arr;
-      renderEntLiveList(); renderMapLive();
-    }, function(e){ console.warn('entregas '+ent.id, e); });
-  }
   lsEntrar(sub);
-  // atualiza só o "há X" do status a cada 20s
+  // atualiza só o "há X" do status a cada 20s — e só quando a tela está em hoje
   setInterval(function(){
+    if(!_ehHojeDia()) return;
     document.querySelectorAll('[data-when]').forEach(function(el){ el.textContent=statusInfo(el.getAttribute('data-when')).txt; });
   }, 20000);
 }
 window.addEventListener('load', function(){
   try{ ensureMapLive(); }catch(e){ _mapFail(); }
+  pintarDia();
   iniciar();
 });
 </script>
