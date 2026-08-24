@@ -25,9 +25,14 @@
     color:var(--gold-lt);font-size:18px;line-height:1;cursor:pointer;font-family:var(--ff-eyebrow)}
   .elv-nav:hover:not(:disabled){background:rgba(212,180,90,.12)}
   .elv-nav:disabled{opacity:.3;cursor:default}
-  .elv-dia{position:relative;flex:1;min-width:150px;text-align:center;border:1px solid var(--line-strong);
-    border-radius:9px;padding:7px 12px;background:rgba(0,0,0,.14)}
+  .elv-dia{position:relative;flex:1;min-width:150px;display:flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid var(--line-strong);border-radius:9px;padding:7px 12px;background:rgba(0,0,0,.14);
+    cursor:pointer;transition:background .15s,border-color .15s}
+  .elv-dia:hover{background:rgba(212,180,90,.10);border-color:var(--gold-lt)}
   .elv-dia b{font-size:13.5px;color:var(--text);font-weight:600}
+  /* o calendário fica desenhado: sem ele a caixa não parecia clicável e ninguém tentava */
+  .elv-dia .elv-cal{width:15px;height:15px;flex:none;stroke:var(--gold-lt);fill:none;stroke-width:1.7;
+    stroke-linecap:round;opacity:.85}
   .elv-dia input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:pointer}
   .elv-hoje{flex:none;border:1px solid var(--line-strong);border-radius:9px;background:transparent;color:var(--gold-lt);
     font-family:var(--ff-eyebrow);font-size:12.5px;padding:7px 11px;cursor:pointer;min-height:34px}
@@ -99,7 +104,7 @@
     <div class="ent-live-title" id="ent-live-title">🏍️ Entregadores Ao Vivo</div>
     <div class="elv-dias">
       <button class="elv-nav" onclick="mudarDia(-1)" aria-label="Dia anterior">&lsaquo;</button>
-      <div class="elv-dia"><b id="elv-dia-rot">—</b><input type="date" id="elv-dia-inp" onchange="irDia(this.value)" aria-label="Escolher a data"></div>
+      <div class="elv-dia"><b id="elv-dia-rot">—</b><svg class="elv-cal" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><input type="date" id="elv-dia-inp" onchange="irDia(this.value)" aria-label="Escolher a data"></div>
       <button class="elv-nav" id="elv-nav-prox" onclick="mudarDia(1)" aria-label="Próximo dia">&rsaquo;</button>
       <button class="elv-hoje" id="elv-hoje" onclick="irDia(_hojeKey())" style="display:none">↩ hoje</button>
     </div>
@@ -569,9 +574,21 @@ function iniciar(){
     document.querySelectorAll('[data-when]').forEach(function(el){ el.textContent=statusInfo(el.getAttribute('data-when')).txt; });
   }, 20000);
 }
+/* O input de data cobre a caixa inteira, mas no computador o Chrome só abre o calendário
+   quando se clica no iconezinho dele — e aqui ele está invisível, então a caixa parecia
+   morta. showPicker() abre por um toque em qualquer canto; onde ele não existe, o clique
+   do próprio input continua valendo como antes. */
+function ligarCalendarioDia(){
+  var i=document.getElementById('elv-dia-inp'); if(!i || !i.showPicker) return;
+  var abre=function(){ try{ i.showPicker(); }catch(e){} };
+  i.addEventListener('click', abre);
+  i.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' ') abre(); });
+}
+
 window.addEventListener('load', function(){
   try{ ensureMapLive(); }catch(e){ _mapFail(); }
   pintarDia();
+  ligarCalendarioDia();
   iniciar();
 });
 </script>
